@@ -2,7 +2,7 @@
 
 ## Team
 - Carlo Bauer
-- Paul Betch
+- Paul Betsch
 - Lukas Siegle
 - Marina Göppel 
 - Carsten Michel
