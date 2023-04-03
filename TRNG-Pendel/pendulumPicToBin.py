@@ -42,14 +42,18 @@ def scanBlackDots(im, width, height):
             if(r <= 80 and g <= 200 and b <= 255):
                 counter, summeX, summeY = counter+1, summeX+x, summeY+y
                 avg = summeX / counter
+                ##Black Pixel which are 50 Pixels away from the currente middle of the current
+                ##black dot will count as a new black Dot.
+                ##Alternative (maybe even better): Check for a minimal amount of black pixels
+                ##e.g. 100 Pixel (Concentration)
                 if x < avg - 50 or x > avg + 50:
                     dotsAvg.append((summeX/counter))
                     dotsAvg.append((summeY/counter))
                     summeX = summeY = counter = 0
-    dotsAvg.append((summeX/counter))
-    dotsAvg.append((summeY/counter))
+    if(counter != 0):
+        dotsAvg.append((summeX/counter))
+        dotsAvg.append((summeY/counter))
     print(str(int(len(dotsAvg)/2))+" black dots were found")
-    
     return dotsAvg
     
 def printResults(dotsAvg):
