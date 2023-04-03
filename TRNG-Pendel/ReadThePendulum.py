@@ -11,35 +11,35 @@ if os.path.exists(filename):
 
 
 
-# open the default camera (usually the built-in webcam)
-cap = cv.VideoCapture(1, cv.CAP_DSHOW)
+# # open the default camera (usually the built-in webcam)
+# cap = cv.VideoCapture(1, cv.CAP_DSHOW)
 
-# check if camera opened successfully
-if not cap.isOpened():
-    print("Error opening video capture.")
+# # check if camera opened successfully
+# if not cap.isOpened():
+#     print("Error opening video capture.")
 
-# read a single frame from the camera
+# # read a single frame from the camera
 
 
-# name = 'a'
-count = 0
-# if frame is read correctly, show it
-while(True):
-      ret, frame = cap.read()
-      # cv2.imshow("Webcam", frame)
-      # cv2.waitKey(0)
-      cv.imwrite('C:\\Python311\\Tests\\Pictures\\' + str(count) + '.jpg', frame) #save image
-      # name = name + 'a'
-      count = count+1
-      if(count > 100):
-         break
+# # name = 'a'
+# count = 0
+# # if frame is read correctly, show it
+# while(True):
+#       ret, frame = cap.read()
+#       # cv2.imshow("Webcam", frame)
+#       # cv2.waitKey(0)
+#       cv.imwrite('C:\\Python311\\Tests\\Pictures\\' + str(count) + '.jpg', frame) #save image
+#       # name = name + 'a'
+#       count = count+1
+#       if(count > 100):
+#          break
    
-# else:
-   # print("Error reading frame from video capture.")
+# # else:
+#    # print("Error reading frame from video capture.")
 
-# release the camera and close the window
-cap.release()
-cv.destroyAllWindows()
+# # release the camera and close the window
+# cap.release()
+# cv.destroyAllWindows()
 
 
 
