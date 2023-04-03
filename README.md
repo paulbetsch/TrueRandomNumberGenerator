@@ -5,5 +5,5 @@
 - Paul Betch
 - Lukas Siegle
 - Marina Göppel 
-- Carste Michel
+- Carsten Michel
 - Stefan Kleinhenz Leiva
