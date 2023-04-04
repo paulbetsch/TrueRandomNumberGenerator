@@ -24,7 +24,7 @@ def captureIt():
         count = count+1
         time.sleep(0.00)
 
-        if(count > 100):
+        if(count > 1000):
             break
     # release the camera and close the window
     cap.release()
@@ -115,6 +115,7 @@ def readIt():
     ## checking if it is a file
         if os.path.isfile(f):        
             im = loadImage('C:\Git\TrueRandomNumberGenerator\Pictures\\'+str(x)+".jpg")
+            print('C:\Git\TrueRandomNumberGenerator\Pictures\\'+str(x)+".jpg")
             x=x+1
             scanResolution(im)
             result = scanBlackDots(im, getWidth(im), getHeight(im))
@@ -136,15 +137,17 @@ def deleteDoubles(allList):
 
 def writeOutput(coordinates):
     output = []
-    string = str(output)
+    string = str(coordinates)
     for c in coordinates:
-        output.append(sha512Hash(c))             
-        string=string.replace(" ",'')
-        string=string.replace(",",'')
-        string=string.replace("'",'')
-        string=string.replace("]",'')
-        string=string.replace("[",'')
-        print(string)
+       output.append(sha512Hash(c))             
+
+    string = str(output)
+    string=string.replace(" ",'')
+    string=string.replace(",",'')
+    string=string.replace("'",'')
+    string=string.replace("]",'')
+    string=string.replace("[",'')
+    print(string)
     with open("C:\Git\TrueRandomNumberGenerator\Output\\rawNumbers.txt", "w") as f:
         f.write(string)              
     return
@@ -155,7 +158,7 @@ if os.path.exists(filename):
         print(f"File '{filename}' has been deleted.")
 
 def run():
-    captureIt()
+    # captureIt()
     readIt()
     coordinates = deleteDoubles(allList)
     writeOutput(coordinates)
