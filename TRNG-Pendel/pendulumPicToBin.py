@@ -111,7 +111,7 @@ def printErrorMessage(*string):
         print("# "+str(s))
     print(header)
     
-im = loadImage("27.jpg")
+im = loadImage("test4.png")
 scanResolution(im)
 result = scanBlackDots(im, getWidth(im), getHeight(im))
 printResults(result)
