@@ -1,0 +1,79 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "True Random Number Generator - OpenAPI 3.1",
+    "description": "This is the definition of a server providing true random numbers over a RESTful interface, based on the OpenAPI 3.1 specification.",
+    "contact": {
+      "email": "DE-Studierendenprojekt-TRNG@thalesgroup.com"
+    },
+    "license": {
+      "name": "All rights reserved",
+      "url": "http://www.thalesgroup.com"
+    },
+    "version": 1
+  },
+  "servers": [
+    {
+      "url": "https://localhost/trng"
+    }
+  ],
+  "tags": [
+    {
+      "name": "randomNum",
+      "description": "Access to random numbers"
+    }
+  ],
+  "paths": {
+    "/randomNum/getRandom": {
+      "get": {
+        "tags": [
+          "randomNum"
+        ],
+        "summary": "Returns a set of sequences of random bits",
+        "description": "Returns an array of sequences of bits of length len, guaranteed to be randomly drawn",
+        "operationId": "getRandomNumbers",
+        "parameters": [
+          {
+            "name": "quantity",
+            "in": "query",
+            "description": "Number of random numbers to get (of equal bit sequence length)",
+            "required": false,
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "numBits",
+            "in": "query",
+            "description": "Number of random bits in each bit sequence",
+            "required": false,
+            "explode": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation; HEX-encoded bit arrays (with leading zeros if required)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

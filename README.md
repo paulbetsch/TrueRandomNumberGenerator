@@ -3,6 +3,10 @@
 ## About
 This repository includes all scripts and files which we use to develop a True Random Number Generator. 
 
+## Requirements
+- [Python 3.9](https://www.python.org/downloads/release/python-390/)
+- Any IDE you prefer, e. g. PyCharm, VS Code, Python IDE
+
 ## Code Style
 - Always comment your code with a short explanation of what it does.
 - Make sure that at least one team member understand your comments.
@@ -10,7 +14,10 @@ This repository includes all scripts and files which we use to develop a True Ra
 - Local variables should be written in camelCase.
 - Function names should be written in PascalCase except the main function which is called: `__main__()`.
 - If possible divide your code into multiple python files.
+- If you have multiple python files, make sure you have on start file, which should be called `__init__.py`.
+- Any other python files should be written in PascalCase excluding the start file.
 - The code should always work without any external Data, but sometimes you have to use external Files than you have to write into a README.md file, which Data is required to run the code.
+- ALL FILE PATH MUST BE RELATIVE SO THAT THE CODE WORKS ON EVERY SINGLE PC!
 
 ## Team
 - Carlo Bauer
