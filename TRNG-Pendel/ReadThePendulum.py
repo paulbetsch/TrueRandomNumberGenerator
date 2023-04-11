@@ -149,7 +149,9 @@ def writeOutput(coordinates):
     string=string.replace("[",'')
     print(string)
     with open("C:\Git\TrueRandomNumberGenerator\Output\\rawNumbers.txt", "w") as f:
-        f.write(string)              
+        f.write(string)       
+
+           
     return
 
 filename='C:\Git\TrueRandomNumberGenerator\Output\\rawNumbers.txt'
@@ -158,7 +160,7 @@ if os.path.exists(filename):
         print(f"File '{filename}' has been deleted.")
 
 def run():
-    # captureIt()
+    captureIt()
     readIt()
     coordinates = deleteDoubles(allList)
     writeOutput(coordinates)

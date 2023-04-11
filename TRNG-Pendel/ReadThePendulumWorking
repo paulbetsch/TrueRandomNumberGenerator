@@ -2,13 +2,13 @@ from PIL import Image
 import hashlib
 import os.path
 import cv2 as cv
+import time
 
 current_dir = os.getcwd()
 pictures_folder_path = os.path.join(current_dir, "Pictures")
 
 
-# Macht bilder und schreibt sie in den Pictures ordner
-
+# Löscht inhalte der rawnumbers.txt, für neuen Output
 def create_output():
     filename = os.getcwd() + '\\rawnumbers.txt'
 
@@ -19,36 +19,29 @@ def create_output():
     with open(filename, 'w') as file:
         print(f"File '{filename}' has been created.")
 
+# Macht bilder und schreibt sie in den Pictures Ordner, wird nur bei Live auswertung benötigt
 
 def take_pictures():
+ # open the default camera (usually the built-in webcam)
     cap = cv.VideoCapture(1, cv.CAP_DSHOW)
-
     # check if camera opened successfully
     if not cap.isOpened():
         print("Error opening video capture.")
 
-    # read a single frame from the camera
-
     # name = 'a'
     count = 0
     # if frame is read correctly, show it
-    while True:
+    while(True):
         ret, frame = cap.read()
-        # cv2.imshow("Webcam", frame)
-        # cv2.waitKey(0)
-        cv.imwrite(os.getcwd() + '\\Pictures\\' + str(count) + '.jpg', frame)  # save image
-        # name = name + 'a'
-        count = count + 1
-        if count > 100:
+
+        cv.imwrite('C:\Git\TrueRandomNumberGenerator\Pictures\\' + str(count) + '.jpg', frame) #save image
+        count = count+1
+        # time.sleep(0.00)
+        if(count > 300):
             break
-
-
     # release the camera and close the window
     cap.release()
     cv.destroyAllWindows()
-
-
-# Löscht alte Bilder aus dem Pictures Ordner
 
 def delete_contents():
     for filename in os.listdir(pictures_folder_path):
@@ -103,23 +96,18 @@ def scanBlackDots(im, width, height):
     dotsAvg = []
     rgb_im = im.convert("RGB")
 
-    # print("Beginning to search for Black Dots")
 
     for x in range(width):
         for y in range(height):
             r, g, b = rgb_im.getpixel((x, y))
             if (r >= 0 and g >= 0 and b >= 120) and (r <= 55 and g <= 200 and b <= 255):
-                print("Schwarzer Pixel an X: " + str(x) + " und Y: " + str(y))
                 counter, summeX, summeY = counter + 1, summeX + x, summeY + y
                 avg = summeX / counter
-                prevX = summeX / counter
-                prevY = summeY / counter
-                if x < avg - 100 or x > avg + 100:
-                    if prevX != (summeX / counter) and prevY != (summeY / counter):
-                        print(prevX)
-                        dotsAvg.append((summeX / counter))
-                        dotsAvg.append((summeY / counter))
-                        summeX = summeY = counter = 0
+
+                if x < avg - 30 or x > avg + 30:
+                    dotsAvg.append((summeX / counter))
+                    dotsAvg.append((summeY / counter))
+                    summeX = summeY = counter = 0
 
     if not counter == 0:
         dotsAvg.append((summeX / counter))
@@ -174,74 +162,71 @@ def printErrorMessage(*string):
     print(header)
 
 
-# im = loadImage("27.jpg")
-# scanResolution(im)
-# result = scanBlackDots(im, getWidth(im), getHeight(im))
-# printResults(result)
-
-
-##print(anlayzeMovement("test9.png","test10.png"))
-
+# Bilder richtig auf name anpassen
 def analyse():
     x = 0
-    help = []
+    coordinates = []
     directory = os.getcwd() + '\\Pictures\\'
     for filename in os.listdir(directory):
         f = os.path.join(directory, filename)
         if os.path.isfile(f):
-            image = loadImage(directory + str(x) + ".jpg")
+            image = loadImage(directory + str(x) + ".png")
             x = x + 1
             result = scanBlackDots(image, getWidth(image), getHeight(image))
             bool = True
-            for i in help:
+            for i in coordinates:
                 if i == result:
                     bool = False
                     break
             if bool == True:
-                help.append(result)
-    for i in help:
-        print_results(i)
+                coordinates.append(result)
+    print(coordinates) 
+    toBits(coordinates)
+    print_results(coordinates)
+    return
 
 
-    clearOutput(help)
-
-
-def clearOutput(help):
-    for i in range(len(help)):
-        print(help[i])
-
-
-
-
-
+def toBits(coordinates):
+    int_list=[]
+    for z in coordinates:        
+      for num in z:
+          int_list.append(int(num))
+    
+    string =""
+    for b in int_list:
+       string += bin(int(b))
+    string=string.replace("b",'')
+    print(string)
+    return 
 
 def print_results(dotsAvg):
     counter, punkt = 0, 1
     for z in dotsAvg:
         if (counter % 2 == 0):
-            print("Punkt " + str(punkt) + " X-Kord: " + str(int(z)))
+            # print("Punkt " + str(punkt) + " X-Kord: " + str(int(z)))
+            ()
         else:
-            print("Punkt " + str(punkt) + " Y-Kord: " + str(int(z)))
             punkt += 1
         counter += 1
     string = ""
     for z in dotsAvg:
         string += sha512Hash(z)
     print(string)
+  
 
-    filename = os.getcwd() + '\\rawNumbers.txt'
 
-    outputFile = open(os.getcwd() + '\\rawNumbers.txt', "a")
+    outputFile = open(os.getcwd() + '\\Output\\rawNumbers.txt', "w")
     outputFile.write(string)
     outputFile.close()
 
 
+
 def run():
-    folder()
+    delete_contents()
+    folder()    
     take_pictures()
-    create_output()
-    # delete_contents()
-    analyse()
+    # create_output()
+    # analyse()
 
 
 run()
