@@ -11,8 +11,7 @@ import math
 import decimal
 
 
-# Berechnet Shannon Entropie des angegebenen File Paths (nur 0,1)
-
+# Berechnet Shannon Entropie des angegebenen Files (nur Nullen und einsen)
 def shannonEntropy(file_path):
     with open(file_path, "r") as f:
         data = f.read().replace(" ", "").replace("\n", "")
@@ -27,8 +26,7 @@ def shannonEntropy(file_path):
     print(f"Shannon-Entropy: {entropy:.20f}")
     return entropy
 
-# Zeigt verteilung von Nullen und Einsen im angegebenen Pfad
-
+# Zeigt die Verteilung von Nullen und Einsen im angebenen File 
 def verteilung(file_path):
     # Öffnen der Datei im Lesemodus
     with open(file_path, "r") as f:
@@ -39,8 +37,7 @@ def verteilung(file_path):
     print("1: - " + str(ones))
     print("0: - " + str(zeros))
 
-# Läd das Bild des übergebenen Pfades und gibt es zurück
-
+# Löscht angegebene File und erstellt sie neu
 def DeleteFileContents(filename):
     filename = os.getcwd() + '\\' + filename
     if os.path.exists(filename):
@@ -49,7 +46,8 @@ def DeleteFileContents(filename):
             print(filename + " cleared")
     else:
         print(filename + " not found")
- 
+
+# Läd Bild des angegebenen Pfades und gibt es zurück
 def LoadImage(path):
     try:
         im = Image.open(path)
@@ -70,7 +68,6 @@ def GetHeight(image):
  
 #Gibt RGB Reichweiten für die Punkte zum Scannen zurück
 #rgb" "= [r<,g<,b<,r>,g>,b>]
-
 def GetRgbValues():
     rgbGreen = [40, 110, 95, 65, 125, 100]
     rgbYellow = [190, 167, 65, 220, 185, 100]
@@ -81,7 +78,6 @@ def GetRgbValues():
 # Sucht nach den übergebenen RGB werten in dem übergebenen Bild und gibt ein Array mit den Koordinaten
 # der jeweilig gefunden Punkte für die RGB werte zurück
 # [(x1,y1),(x2,y2),(x3,y3)]
-
 def ScanDots(image, width, height, rgb):
     coords = []
     # für jede RGB reichtweite ein durchlauf
@@ -96,7 +92,8 @@ def ScanDots(image, width, height, rgb):
         for x, y in pixels:
             counter, summeX, summeY = counter + 1, summeX + x, summeY + y
             avg = summeX / counter
- 
+
+            # Wenn der Abstand zweier Pixel innerhalb 70 Pixel liegt gehört es noch zu dem aktuellen Punkt
             if x < avg - 70 or x > avg + 70:
                 dotsAvg.append((summeX / counter))
                 dotsAvg.append((summeY / counter))
@@ -109,15 +106,12 @@ def ScanDots(image, width, height, rgb):
                 str(rgb[i][2]) + " =< G >= " + str(rgb[i][3]) + " " +str(rgb[i][4]) + " =< B >= " + str(rgb[i][5]) + " gefunden")
             if (int(len(dotsAvg) / 2)) == 1:
                 print("Valid coords - appended")
-                coords.append(dotsAvg)
- 
-        # Gefundener Punkt (dotsAvg) x,y anhängen --> dann nächste Farbe      
+                coords.append(dotsAvg)    
     return coords
 
 # Sucht nach den übergebenen RGB werten in dem übergebenen Bild und gibt ein Array mit den Winkeln und der
 # Distanz zum übergebenen Mittelpunkt x0,y0 zurück
 # [(d1, w1), (d2, w2), (d3, w3)]
-
 def ScanDotsPolar(image, width, height, rgb, x0, y0):
     coords = []
     # für jede übergebene RGB reichtweite im Array ein durchlauf
@@ -164,8 +158,7 @@ def ScanDotsPolar(image, width, height, rgb, x0, y0):
     return coords
 
  
-# Schreibt Koordinaten für 1 Bild in jeweilige csv Dateien für die jeweilige Farbe
-
+# Schreibt Koordinaten von 1 Bild in jeweilige csv Dateien für den jeweiligen Punkt
 def WriteToCsvSingleCoord(coords):
      for i, lst in enumerate(coords):
                 filename = f"Koordinaten_{i+1}.csv"
@@ -176,7 +169,6 @@ def WriteToCsvSingleCoord(coords):
                     print(f"written to {filename} successfully.")
 
 # Schreib übergebenen String (input) in den übergebenen Pfad, falls Pfad nicht vorhanden wird dieser erstellt
-
 def WriteToFile(input, filename):
     filename = os.getcwd() + '\\' + filename
     with open(filename, 'a') as file:
@@ -186,18 +178,16 @@ def WriteToFile(input, filename):
     outputFile.close()
  
 
-def FloatToBinary(number):
-    packed = struct.pack('f', number)
-    number = ''.join(format(b, '08b')for b in packed)
-    return number
-
 # Bekommt ergebnissliste (egal ob normale Koordinaten (float) oder Winkel(dezimal))
 # Wandelt ergebnisse in Binär um und schreibt LSB in übergebenen filepath
 # returnt lsbs in Array
-
 def LsbBits(results, file_path):
     DeleteFileContents(file_path)
     bits = []
+    # Results hält ergebnisse aller Bilder
+    # Result ist das Ergebniss eines Bild
+    # Coords ist jeweils ein Koordinaten Tupel 
+    # Coord is ein einziger Wert (Koordinate/Winkel oder Distanz)
     for result in results:
         for coords in result:
             for coord in coords:
@@ -236,7 +226,9 @@ def LsbBits(results, file_path):
                     WriteToFile(lsb, file_path)
                     bits.append(lsb)
     return bits
- 
+
+# Hasht übergebene Result Liste immer mit dem nachgehenden Wert als Seed 
+# Ergebnisse werden in  binarynumbers.txt geschrieben
 def HashBits(results):
     DeleteFileContents("binarynumbers.txt")
     for result in results:
@@ -244,6 +236,7 @@ def HashBits(results):
             gangweite = 0
             for coord in coords:
                 prevcoord = coord
+                # Gangweite ist der Abstand der jeweiligen Werte
                 if gangweite == 1:
                     num = bytes(str(prevcoord), 'utf-8')
                     seed = struct.pack('f', coord)
@@ -260,7 +253,7 @@ def HashBits(results):
 
 # Schreibt übergebene Gesamtergebnissliste mit [ [(x1,y1), (x2,y2), (x3, y3)] , [(z1,u1), (z2,u2), (z3,u3)] , ...]
 # Liste hält jeweils ergebnisse für ein Bild, welches jeweils die Koordinaten der jeweiligen Farben umfasst 
-
+# Kann werte unabhängig von Datentyp schreiben 
 def WriteToCsv(results):
      for coords in results:
         for i, lst in enumerate(coords):
@@ -272,7 +265,6 @@ def WriteToCsv(results):
                         print(f"written to {filename} successfully.")
 
 # Gibt ergebnissliste aus
-
 def printResults(results):
     for result in results:
         print(" ")
