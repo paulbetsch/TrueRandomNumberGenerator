@@ -1,7 +1,7 @@
 # TRNG (True Random Number Generator)
 
 ## About
-This repository includes all scripts and files which we use to develop a True Random Number Generator. 
+This repository includes all scripts and files which we use to develop a True Random Number Generator. There is a directory for each tool, we developed to help us. The whole Software solution can be found in the directory called "TRNG".
 
 ## Requirements
 - [Python 3.9](https://www.python.org/downloads/release/python-390/)
