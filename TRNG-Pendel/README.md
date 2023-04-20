@@ -1,2 +1,0 @@
-# TRNG with Tripendelum
-# Test
