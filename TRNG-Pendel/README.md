@@ -1,1 +1,0 @@
-# TRNG with Tripendelum
