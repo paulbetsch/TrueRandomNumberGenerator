@@ -248,8 +248,6 @@ def DeleteDoubles(results):
                 print(str(coord) + " != " + str(prevcord) + " keep")
                 prevcord = coord  
     return new_results
-
-
                    
 
 def run():
