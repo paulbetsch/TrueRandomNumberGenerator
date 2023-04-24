@@ -1,0 +1,4 @@
+ObjectTracker.py: 
+
+-Punkte des Pendels werden aus einem Live-Stream der Kamera erkannt und ausgewertet. Die Koordinaten werden in output.csv ausgegeben und die Bits in bin.txt.
+-Wichtige Informationen: Der aktuelle Winkel wird in Gradmaß angegeben und reicht von 0-360 Grad. Links entspricht 0 Grad, unten 90 Grad, rechts 180 Grad und oben 270 Grad.
