@@ -7,6 +7,8 @@ This folder contains all the nesseary Scripts to control the light barrier and m
 The following scripts must be downloaded and saved in the same folder.
 
 - lichtschranke.py
+- lsbsampler.py
 
 ## Scripts
-Lichtschranke to control the Lightbarrier and to capture the time intervalls of pendulum breaktroughs
+- lichtschranke.py to control the Lightbarrier and to capture the time intervalls of pendulum breaktroughs
+- lsbsampler.py to sample the lsb of all timeintervalls (may be advanced in the future)
