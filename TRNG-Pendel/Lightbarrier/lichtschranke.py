@@ -1,21 +1,25 @@
 import RPi.GPIO as GPIO
 import time
-import threading
+from multiprocessing import Process, Manager
+from lsbsampler import *
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-currentTime = 0
-pastTime = 0
-
 ##Lightsensor Configuration
 ## -> GPIO Pin 18 = Digital output of the photoresistors
 ## -> GPIO Pin 23 = power supply of the photoresistor
-lightSensorDO = 18
-lightSensorV = 23
-lightSensorStatus = False
-GPIO.setup(lightSensorDO, GPIO.IN)
-GPIO.setup(lightSensorV, GPIO.OUT)
+lightSensorOneDO = 18
+lightSensorOneV = 23
+lightSensorOneStatus = False
+GPIO.setup(lightSensorOneDO, GPIO.IN)
+GPIO.setup(lightSensorOneV, GPIO.OUT)
+
+lightSensorTwoDO = 24
+lightSensorTwoV = 25
+lightSensorTwoStatus = False
+GPIO.setup(lightSensorTwoDO, GPIO.IN)
+GPIO.setup(lightSensorTwoV, GPIO.OUT)
 
 ##Buzzer Configuration
 ## -> GPIO Pin 21 = power supply of the Buzzer
@@ -25,40 +29,119 @@ GPIO.setup(buzzerV, GPIO.OUT)
 
 ##Laser Configuration
 ## -> GPIO Pin 5 = power supply of the laser diode
-laserV = 5
-GPIO.setup(laserV, GPIO.OUT)
+laserOneV = 16
+GPIO.setup(laserOneV, GPIO.OUT)
 
-def LaserOn():
-    GPIO.output(laserV, True)
+laserTwoV = 12
+GPIO.setup(laserTwoV, GPIO.OUT)
+
+def supplyPower(pin):
+    GPIO.output(pin, True)
     
-def LaserOff():
-    GPIO.output(laserV, False)
+def stopPower(pin):
+    GPIO.output(pin, False)
     
-def LightSensorOn():
-    GPIO.output(lightSensorV, True)
+def stopPowerAll():
+    stopPower(laserOneV)
+    stopPower(laserTwoV)
+    stopPower(lightSensorOneV)
+    stopPower(lightSensorTwoV)
+    stopPower(buzzerV)
     
-def LightSensorOff():
-    GPIO.output(lightSensorV, False)
+def supplayPowerAll():
+    supplyPower(laserOneV)
+    supplyPower(lightSensorOneV)
+    supplyPower(laserTwoV)
+    supplyPower(lightSensorTwoV)
+    supplyPower(buzzerV)
 
-def BuzzerOff():
-    GPIO.output(buzzerV, False)
-    
-def BuzzerOn():
-    GPIO.output(buzzerV, True)
+# The lightSensor will output a high voltage to signal a 1 if the
+# lightbarrier is broken. Or in another context if the light resistor
+# receive not enough concentration of light
+def readLightSensor(lightSensorDO, lightSensorStatus, listValues):
+    pastTime = 0
+    currentTime = time.time_ns()
+    while True:
+        broken = GPIO.input(lightSensorDO) == 1
+        if (broken != lightSensorStatus ):
+            lightSensorStatus = broken
+            if(broken):
+                print("Lightbarrier broken on Pin "+str(lightSensorDO))
+                pastTime = currentTime
+                listValues.append(calculateTime(pastTime, time.time_ns()))
+                print(listValues[-1])
+            else:
+                print("Lightbarrier closed on Pin "+str(lightSensorDO))
+                print("Starting time")
+                currentTime = time.time_ns()
 
-def ReadLightSensor():
-    global lightSensorStatus
-    global timeintervalls
-    state = (GPIO.input(lightSensorDO) == 0)
-    if not (state == lightSensorStatus):
-        if(state):
-            print("Lightbarrier closed Pin "+str(lightSensorDO))
-        else:
-            print("Lightbarrier broken Pin "+str(lightSensorDO))
-            CalculateTime()
-        lightSensorStatus = state
+def calculateTime(pastTime, currentTime):
+    return currentTime - pastTime
+
+supplyPower(laserTwoV)
+supplyPower(lightSensorTwoV)
+#readLightSensor(lightSensorTwoDO, lightSensorTwoStatus)
+
+supplyPower(laserOneV)
+supplyPower(lightSensorOneV)
+#readLightSensor(lightSensorOneDO, lightSensorOneStatus)
+
+sharedList = []
+
+if __name__ == "__main__":
+    # Opens a new Manger to allow interprocess communication
+    with Manager() as manager:
+        # Two List to exchange data from the worker threads to the main threads
+        sharedList = manager.list()
+        sharedList2 = manager.list()
+
+        procs = []
+        first = Process(target=readLightSensor, args=(lightSensorOneDO, lightSensorOneStatus, sharedList))
+        procs.append(first)
+        second = Process(target=readLightSensor, args=(lightSensorTwoDO, lightSensorTwoStatus, sharedList2))
+        procs.append(second)
+
+        # Using start() to simutainiusly run the code instead of run()
+        first.start()
+        second.start()
+
+        print("sleeping")
+        time.sleep(15)
+
+        # Killing the threads after 4 Seconds
+        print("killing")
+        first.terminate()
+        second.terminate()
 
 
+        # for p in procs:
+        #     p.join()
+        """
+        print("Main Thread")
+        print(sharedList)
+        print("neue Liste")
+        print(sharedList2)"""
+        
+        print(len(sharedList))
+        decListToBinaryList(sharedList)
+        print(len(sharedList2))
+        decListToBinaryList(sharedList2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""
 def ControlBuzzer():
     global lightSensorStatus
     if(lightSensorStatus == True):
@@ -86,5 +169,5 @@ def CalculateTime():
     pastTime = currentTime 
     
 BootupLightBarrier()
-ShutdownLightBarrier()
+ShutdownLightBarrier()"""
     
