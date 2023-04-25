@@ -35,6 +35,13 @@ GPIO.setup(laserOneV, GPIO.OUT)
 laserTwoV = 12
 GPIO.setup(laserTwoV, GPIO.OUT)
 
+
+def getLightSensorOneDOPin():
+    return lightSensorOneDO
+
+def getLightSensorTwoDOPin():
+    return lightSensorTwoDO
+
 def supplyPower(pin):
     GPIO.output(pin, True)
     
@@ -54,6 +61,43 @@ def supplayPowerAll():
     supplyPower(laserTwoV)
     supplyPower(lightSensorTwoV)
     supplyPower(buzzerV)
+
+def supplyLightSensorOne():
+    supplyPower(lightSensorOneV)
+
+def supplyLightSensorTwo():
+    supplyPower(lightSensorTwoV)
+
+def supplyLaserOne():
+    supplyPower(laserOneV)
+
+def supplyLaserTwo():
+    supplyPower(laserTwoV)
+
+def supplyBuzzer():
+    supplyPower(buzzerV)
+
+def stopLightSensorOne():
+    stopPower(lightSensorOneV)
+
+def stopLightSensorTwo():
+    stopPower(lightSensorTwoV)
+
+def stopLaserOne():
+    stopPower(laserOneV)
+
+def stopLaserTwo():
+    stopPower(laserTwoV)
+
+def stopBuzzer():
+    stopPower(BuzzerV)
+
+def piepBuzzer(amount):
+    for i in range(amount):
+        time.sleep(0.1)
+        supplyBuzzer()
+        time.sleep(0.1)
+        stopBuzzer()
 
 # The lightSensor will output a high voltage to signal a 1 if the
 # lightbarrier is broken. Or in another context if the light resistor
