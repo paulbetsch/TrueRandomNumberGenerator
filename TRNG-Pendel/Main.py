@@ -75,87 +75,66 @@ def GetRgbValues():
     rgbAll = [rgbYellow, rgbGreen]
     return rgbAll
  
-# Sucht nach den übergebenen RGB werten in dem übergebenen Bild und gibt ein Array mit den Koordinaten
-# der jeweilig gefunden Punkte für die RGB werte zurück
-# [(x1,y1),(x2,y2),(x3,y3)]
-def ScanDots(image, width, height, rgb):
-    coords = []
-    # für jede RGB reichtweite ein durchlauf
-    for i in range(len(rgb)):
-        counter = summeX = summeY = 0
-        dotsAvg = []
-        np_im = np.array(image)
-        # RGB reichweiten deklarieren
-        mask = np.logical_and.reduce((np_im[:,:,0] >= rgb[i][0], np_im[:,:,1] >= rgb[i][1], np_im[:,:,2] >= rgb[i][2],
-                                      np_im[:,:,0] <= rgb[i][3], np_im[:,:,1] <= rgb[i][4], np_im[:,:,2] <= rgb[i][5]))
-        pixels = np.transpose(np.where(mask))
-        for x, y in pixels:
-            counter, summeX, summeY = counter + 1, summeX + x, summeY + y
-            avg = summeX / counter
 
-            # Wenn der Abstand zweier Pixel innerhalb 70 Pixel liegt gehört es noch zu dem aktuellen Punkt
-            if x < avg - 70 or x > avg + 70:
-                dotsAvg.append((summeX / counter))
-                dotsAvg.append((summeY / counter))
-                summeX = summeY = counter = 0
- 
-        if not counter == 0:
-            dotsAvg.append((summeX / counter))
-            dotsAvg.append((summeY / counter))
-            print(str(int(len(dotsAvg) / 2)) + " Punkt wurde für "  + str(rgb[i][0]) + " =< R >= " + str(rgb[i][1]) + " " + 
-                str(rgb[i][2]) + " =< G >= " + str(rgb[i][3]) + " " +str(rgb[i][4]) + " =< B >= " + str(rgb[i][5]) + " gefunden")
-            if (int(len(dotsAvg) / 2)) == 1:
-                print("Valid coords - appended")
-                coords.append(dotsAvg)    
-    return coords
+ # Ließt ein Bild Pixel für Pixel ein und prüft ob dieser in einem vordefiniertem Farbbereich liegt.
+ # Gibt die Koordinaten aller gefundenen Punkte zurück in folgendem Format zurück: [[x1, y1], [x2, y2]]
+def ScanDots(im, path, width, height, rgb):
+    counter = summeX = summeY = 0
+    dotsAvg = []
+    rgb_im = im.convert("RGB")
+
+    # print("Beginning to search for Black Dots")
+    for x in range(width):
+        for y in range(height):
+            r, g, b = rgb_im.getpixel((x, y))
+            # Nach Punkten in allen gegebenen Farben suchen
+            for i in range(len(rgb)):
+                # Hier wird der Aktuelle Pixel auf den Farbbereich geprüft
+                if (r >= rgb[i][0] and g >= rgb[i][1] and b >= rgb[i][2]) and (r <= rgb[i][3] and g <= rgb[i][4] and b <= rgb[i][5]):
+                    # print("Pixel an X: " + str(x) + " und Y: " + str(y))
+                    counter, summeX, summeY = counter + 1, summeX + x, summeY + y
+                    avg = summeX / counter
+
+                    # TODO die dichte der Punkte innerhalb eines Bereiches überprüfen
+                    # Jeder weiterer Punkt muss mehr als 30 Pixel von dem aktuellen entfernt sein
+                    if x < avg - 30 or x > avg + 30:
+                        dotsAvg.append([(summeX / counter), (summeY / counter)])
+                        summeX = summeY = counter = 0
+
+    if not counter == 0:
+        dotsAvg.append([(summeX / counter), (summeY / counter)])
+    
+    with open('resultsXY.csv', 'a', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        if(len(dotsAvg) == 2):
+            csvwriter.writerow([path, dotsAvg[0][0], dotsAvg[0][1], dotsAvg[1][0], dotsAvg[1][1]])
+    #print('Dots AVG: ' + str(dotsAvg))
+    return dotsAvg
+
 
 # Sucht nach den übergebenen RGB werten in dem übergebenen Bild und gibt ein Array mit den Winkeln und der
 # Distanz zum übergebenen Mittelpunkt x0,y0 zurück
 # [(d1, w1), (d2, w2), (d3, w3)]
-def ScanDotsPolar(image, width, height, rgb, x0, y0):
+def ScanDotsPolar(image, path, width, height, rgb, x0, y0):
+    dotsAvg = ScanDots(image, path, width, height, rgb)
     coords = []
-    # für jede übergebene RGB reichtweite im Array ein durchlauf
-    for i in range(len(rgb)):
-        counter = summeX = summeY = 0
-        dotsAvg = []
-        np_im = np.array(image)
-        # RGB reichweiten deklarieren
-        mask = np.logical_and.reduce((np_im[:,:,0] >= rgb[i][0], np_im[:,:,1] >= rgb[i][1], np_im[:,:,2] >= rgb[i][2],
-                                      np_im[:,:,0] <= rgb[i][3], np_im[:,:,1] <= rgb[i][4], np_im[:,:,2] <= rgb[i][5]))
-        pixels = np.transpose(np.where(mask))
-        for x, y in pixels:
-            counter, summeX, summeY = counter + 1, summeX + x, summeY + y
-            avg = summeX / counter
-            # Wenn der Abstand zweier Pixel innerhalb 70 Pixel liegt gehört es noch zu dem aktuellen Punkt
-            if x < avg - 70 or x > avg + 70:
-                # Umrechnung der Koordinaten ins Polarkoordinatensystem
-                dx = x0 - x
-                dy = y0 - y
-                abstand = math.sqrt(dx**2 + dy**2)
-                winkel = math.acos(dx/abstand)
-                dotsAvg.append((abstand, winkel))
-                summeX = summeY = counter = 0
 
-        if not counter == 0:
-            # Umrechnung der Koordinaten ins Polarkoordinatensystem
-            dx = x0 - x
-            dy = y0 - y
-            abstand = math.sqrt(dx**2 + dy**2)
-            winkel = math.acos(dx/abstand)
-            # Ergebnisse in DotsAvg schreiben
-            dotsAvg.append((abstand, winkel))
-            print(str(int(len(dotsAvg))) + " Punkt wurde für "  + str(rgb[i][0]) + " =< R >= " + str(rgb[i][1]) + " " + 
-                str(rgb[i][2]) + " =< G >= " + str(rgb[i][3]) + " " +str(rgb[i][4]) + " =< B >= " + str(rgb[i][5]) + " gefunden")
-            print("Valid coords - appended")
-            # Ergebniss des durchlaufes in Gesamtergebnissliste hängen
-            coords.append(dotsAvg)
-            # Schreibt Koordinaten in CSV File
-            with open('output.csv', 'a', newline='') as file:
-                writer = csv.writer(file)
-                for dot in dotsAvg:
-                    writer.writerow(dot)
-            # --> dann nächste Farbe   
+    # Für jeden gefundenen Punkt die Berechnung durchführen
+    for x, y in dotsAvg:
+        # Umrechnung der XY-Koordinaten ins Polarkoordinatensystem
+        dx = x - x0
+        dy = y - y0
+        abstand = math.sqrt(dx**2 + dy**2)
+        winkel = math.acos(dx/abstand) * sign(dy)
+        # Abstand und Winkel der Punkte zur rückgabe Variable hinzufügen
+        coords.append([abstand, winkel])
+
+    with open('resultsPolar.csv', 'a', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile)
+        if(len(coords) == 2):
+            csvwriter.writerow([path, coords[0][0], coords[0][1], coords[1][0], coords[1][1]])
     return coords
+
 
  
 # Schreibt Koordinaten von 1 Bild in jeweilige csv Dateien für den jeweiligen Punkt
