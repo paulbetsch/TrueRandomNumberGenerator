@@ -1,10 +1,13 @@
 import random
 import json
-from flask import Flask, request, jsonify
+import time
+from flask import Flask, request, jsonify, make_response
 from flask_restful import Resource, Api
 
+# Determines if Generating Random Numbers is possible
 TRNG_RUNNING = False
 
+# App configs (TODO: change to WSGI before Production)
 app = Flask(__name__)
 api = Api(app)
 api.prefix = '/trng'
@@ -15,6 +18,9 @@ api.prefix = '/trng'
 # 2. numBits: Number of random bits in each bit sequence
 class GetRandomNums(Resource):
     def get(self):
+        global TRNG_RUNNING
+        if(not TRNG_RUNNING):
+            return make_response(jsonify({'description': 'system not ready; try init'}), 432)
         # counter for len of result array
         i = 0
         # len of result array given by parameter
@@ -39,19 +45,30 @@ class GetRandomNums(Resource):
             # Append the Hex Number to the array
             result.append(hexStr)
         if(len(result) > 0):
-            return result, 200
+            return make_response(result, 200)
         else:
-            return jsonify({'description': 'system not ready; try init'}), 432
+            return make_response(jsonify({'description': 'system deliverd an empty array; check noise source'}), 500)
 
 # This endpoint initializes the TRNG and ensures that the endpoint GetRandomNums works.
 class InitRandomNums(Resource):
     def get(self):
-        return jsonify({'status': '403'})
+        global TRNG_RUNNING
+        if(TRNG_RUNNING):
+            return make_response(jsonify({'description': 'system already running'}), 200)
+        else:
+            # time.sleep(60)
+            TRNG_RUNNING = True
+            return make_response(jsonify({'description': 'system initialized'}), 200)
 
 # This endpoint shuts down the TRNG
 class ShutdownRandomNums(Resource):
     def get(self):
-        return jsonify({'status': '403'})
+        global TRNG_RUNNING
+        if(TRNG_RUNNING):
+            TRNG_RUNNING = False
+            return make_response(jsonify({'description': 'system shutdown'}), 200)
+        else:
+            return make_response(jsonify({'description': 'system already shutdown'}), 403)
 
 
 api.add_resource(GetRandomNums, '/randomNum/getRandom')
