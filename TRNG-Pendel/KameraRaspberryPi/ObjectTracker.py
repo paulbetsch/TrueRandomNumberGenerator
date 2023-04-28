@@ -48,11 +48,12 @@ def LsbFloat(liste):
     #with open('bin.txt', 'w') as f:
     #    f.write("")
 
-    # Schreibt lsbs
+    # Schreibt lsbs in bin.txt (als String)
     for i in liste:
         binary_str = ''.join(format(c, '08b') for c in struct.pack('!f', i))
         if len(binary_str) > 8:
             lsb = binary_str[-1]
+            #Lsb schreiben
             with open('bin.txt', 'a') as f:
                 f.write(lsb)
 
