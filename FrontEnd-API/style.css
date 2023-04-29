@@ -1,0 +1,31 @@
+.seccion-derecha{
+
+    float: right;
+    width: 30%;
+    text-align: left;
+
+}
+
+.seccion-izquierda{
+    float: left;
+    width: 69%;
+    border: 1px solid black;
+    
+}
+.seccion-izquierda>h1{
+    text-align: center;
+    background-color:rgb(0, 109, 214);
+    color: white;
+}
+
+#init-btn, #shutdown-btn{
+    margin-bottom: 20px;
+  }
+
+ #status{
+    font: bold;
+    text-align: left;
+    font-size: 120%;
+
+ } 
+ 
