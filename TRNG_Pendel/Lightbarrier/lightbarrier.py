@@ -90,7 +90,7 @@ def stopLaserTwo():
     stopPower(laserTwoV)
 
 def stopBuzzer():
-    stopPower(BuzzerV)
+    stopPower(buzzerV)
 
 def piepBuzzer(amount):
     for i in range(amount):
@@ -122,16 +122,58 @@ def readLightSensor(lightSensorDO, lightSensorStatus, listValues):
 def calculateTime(pastTime, currentTime):
     return currentTime - pastTime
 
-supplyPower(laserTwoV)
-supplyPower(lightSensorTwoV)
+#supplyPower(laserTwoV)
+#supplyPower(lightSensorTwoV)
 #readLightSensor(lightSensorTwoDO, lightSensorTwoStatus)
 
-supplyPower(laserOneV)
-supplyPower(lightSensorOneV)
+#supplyPower(laserOneV)
+#supplyPower(lightSensorOneV)
 #readLightSensor(lightSensorOneDO, lightSensorOneStatus)
 
-sharedList = []
+def runTwoLightbarriersParallel():
+    with Manager() as manager:
+        sharedList = manager.list()
+        sharedList2 = manager.list()
+        supplyLightSensorOne()
+        supplyLaserOne()
+        process = Process(target=readLightSensor, args=(lightSensorOneDO, lightSensorOneStatus, sharedList))
+        process.start()
+        
+        supplyLightSensorTwo()
+        supplyLaserTwo()
+        processTwo = Process(target=readLightSensor, args=(lightSensorTwoDO, lightSensorTwoStatus, sharedList2))
+        processTwo.start()
+        
+        #Abrruch Bedingung von Kameraüberwachung, abbruch wenn pendel zu langsam
+        for i in range(15):
+            time.sleep(1)
+        
+        process.terminate()
+        processTwo.terminate()
+        print(sharedList)
+        decListToBinaryList(sharedList)
 
+def runOneLightbarrierParallel():
+    with Manager() as manager:
+        sharedList = manager.list()
+        supplyLightSensorOne()
+        supplyLaserOne()
+        process = Process(target=readLightSensor, args=(lightSensorOneDO, lightSensorOneStatus, sharedList))
+        process.start()
+        
+        #Abrruch Bedingung von Kameraüberwachung, abbruch wenn pendel zu langsam
+        for i in range(15):
+            time.sleep(1)
+        
+        process.terminate()
+        print(sharedList)
+        decListToBinaryList(sharedList)
+    
+#runOneLightbarrierParallel()
+#runTwoLightbarriersParallel()
+
+
+"""
 if __name__ == "__main__":
     # Opens a new Manger to allow interprocess communication
     with Manager() as manager:
@@ -140,6 +182,8 @@ if __name__ == "__main__":
         sharedList2 = manager.list()
 
         procs = []
+        supplyLightSensorOne()
+        supplyLaserOne()
         first = Process(target=readLightSensor, args=(lightSensorOneDO, lightSensorOneStatus, sharedList))
         procs.append(first)
         second = Process(target=readLightSensor, args=(lightSensorTwoDO, lightSensorTwoStatus, sharedList2))
@@ -160,17 +204,16 @@ if __name__ == "__main__":
 
         # for p in procs:
         #     p.join()
-        """
         print("Main Thread")
         print(sharedList)
         print("neue Liste")
-        print(sharedList2)"""
+        print(sharedList2)
         
         print(len(sharedList))
         decListToBinaryList(sharedList)
         print(len(sharedList2))
         decListToBinaryList(sharedList2)
-
+"""
 
 
 
