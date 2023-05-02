@@ -1,15 +1,22 @@
 # import requests
 import tkinter as tk
+import sys
+
+sys.path.insert(0, '../TRNG_Pendel') # inserting path for imports
+
+from KameraRaspberryPi import *
+from Lightbarrier import *
+from PendelAnalyse import *
 
 
 class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.master = master
-        self.pack()
-        self.create_widgets()
+        self.pack() # packs all widgets into the main frame 
+        self.create_widgets() 
 
-    def changeText(self, textnew): 
+    def changeText(self, textnew): #updates status depending on which button was pushed
         self.statusB.config(text = textnew) 
 
     def create_widgets(self):
@@ -47,7 +54,6 @@ class Application(tk.Frame):
     
     def startCamera(self):
        # Objecttracking starts
-       # KameraRaspberryPi.__init__
        self.changeText("Status: Camera started")
        
 
@@ -84,23 +90,8 @@ class Application(tk.Frame):
         self.changeText("Status: All tools stopped")
 
 
-  #  def generate(self):
-   #     num_bits = self.num_bits_entry.get()
-    #    quantity = self.quantity_entry.get()
-#
-       # Make a GET request to the API endpoint
-  #      response = requests.get(f"http://localhost:5000/randomNum/getRandom?numBits={num_bits}&quantity={quantity}")
-#
- #       if response.status_code == 200:
-  #          # Update the result label with the generated hexadecimal numbers
-   #         self.result_label.config(text=response.text)
-    #    else:
-     #       # Display an error message if the API request fails
-      #      self.result_label.config(text="Error: " + response.text)
-
-
-root = tk.Tk()
-root.title("Tool Management")
-root.geometry("500x300")
-app = Application(master=root)
-app.mainloop()
+root = tk.Tk() # setting root
+root.title("Tool Management") # naming the frame
+root.geometry("500x300") # setting size
+app = Application(master=root) # initializing application
+app.mainloop() # starting application 

@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./TRNG_Pendel"
+    ]
+}
