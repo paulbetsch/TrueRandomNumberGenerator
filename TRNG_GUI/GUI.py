@@ -65,6 +65,7 @@ class Application(tk.Frame):
     def StartCamera(self):
     # Objecttracking starts
        self.ChangeText("Status: Camera started")
+       KameraRaspberryPi.CapturePendelum()
 
     def StopCamera(self):
     # Objecttracking stops
