@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, '../TRNG_Pendel') # inserting path for imports
 
 import Lightbarrier
-import KameraRaspberryPi 
+from KameraRaspberryPi import ObjectTracker
 # import PendelAnalyse
 
 
@@ -65,16 +65,34 @@ class Application(tk.Frame):
     def StartCamera(self):
     # Objecttracking starts
        self.ChangeText("Status: Camera started")
-       KameraRaspberryPi.CapturePendelum()
+       global CAMERA_RUNNING
+       CAMERA_RUNNING = True
+       if CAMERA_RUNNING == True:
+           self.ChangeText("Status: Camera running")
+           ObjectTracker.CapturePendelum()
+
+    
 
     def StopCamera(self):
     # Objecttracking stops
         self.ChangeText("Status: Camera stopped")
+        global CAMERA_RUNNING
+        if CAMERA_RUNNING == False:
+           self.ChangeText("Status: Camera is not running")
+        elif CAMERA_RUNNING == True:
+            CAMERA_RUNNING = False
+            self.ChangeText("Status: Camera stopped")
+
+    
 
     def StartLightOne(self):
     # One Lightbarrier starts
        self.ChangeText("Status: One Lightbarrier started")  
-       Lightbarrier.runOneLightbarrierParallel()    
+       global LIGHT_RUNNING
+       LIGHT_RUNNING = True
+       if LIGHT_RUNNING == True:
+           self.ChangeText("Status: Camera running")
+           Lightbarrier.runOneLightbarrierParallel()    
 
   #  def StartLightTwo(self):
     # Both Lightbarriers starts
@@ -83,23 +101,46 @@ class Application(tk.Frame):
 
     def StopLight(self):
     # Lightbarrier stops
-        self.ChangeText("Status: Lightbarrier stopped")      
+        self.ChangeText("Status: Lightbarrier stopped")  
+        global LIGHT_RUNNING
+        if LIGHT_RUNNING == False:
+           self.ChangeText("Status: Lightbarrier is not running")
+        elif LIGHT_RUNNING == True:
+            LIGHT_RUNNING = False
+            self.ChangeText("Status: Lightbarrier stopped")    
 
     def StartEngine(self):
     # Engine Tool starts
-        self.ChangeText("Status: Engine started")
+        self.ChangeText("Status: Engine started")  
+        global ENGINE_RUNNING
+        ENGINE_RUNNING = True
+        if ENGINE_RUNNING == True:
+           self.ChangeText("Status: Engine running")
+           # --> Engine Start Method
 
     def StopEngine(self):
     # Engine Tool stops
         self.ChangeText("Status: Engine stopped")
+        global ENGINE_RUNNING
+        if ENGINE_RUNNING == False:
+           self.ChangeText("Status: Engine is not running")
+        elif ENGINE_RUNNING == True:
+            ENGINE_RUNNING = False
+            self.ChangeText("Status: Engine stopped") 
 
     def StartAll(self):
     # All tools start
         self.ChangeText("Status: All tools started")
+        self.StartCamera
+        self.StartEngine
+        self.StartLightOne
 
     def StopAll(self):
     # All tools stop
         self.ChangeText("Status: All tools stopped")
+        self.StopCamera
+        self.StopEngine
+        self.StopLight
 
 
 root = tk.Tk() # setting root
