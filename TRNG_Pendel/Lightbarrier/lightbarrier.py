@@ -147,6 +147,8 @@ def runTwoLightbarriersParallel():
         #Abrruch Bedingung von Kameraüberwachung, abbruch wenn pendel zu langsam
         for i in range(15):
             time.sleep(1)
+           
+        stopPowerAll()
         
         process.terminate()
         processTwo.terminate()
@@ -164,6 +166,8 @@ def runOneLightbarrierParallel():
         #Abrruch Bedingung von Kameraüberwachung, abbruch wenn pendel zu langsam
         for i in range(15):
             time.sleep(1)
+            
+        stopPowerAll()
         
         process.terminate()
         print(sharedList)
