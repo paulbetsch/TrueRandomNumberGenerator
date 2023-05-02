@@ -3,9 +3,9 @@ import sys
 
 sys.path.insert(0, '../TRNG_Pendel') # inserting path for imports
 
-from KameraRaspberryPi import *
-from Lightbarrier import *
-from PendelAnalyse import *
+import Lightbarrier
+import KameraRaspberryPi 
+# import PendelAnalyse
 
 
 class Application(tk.Frame):
@@ -31,8 +31,11 @@ class Application(tk.Frame):
         self.stopCameraB = tk.Button(self, text="Stop Camera", command=self.StopCamera)
         self.stopCameraB.pack(side="bottom")
 
-        self.startLightB = tk.Button(self, text="Start Lightbarrier", command=self.StartLight)
-        self.startLightB.pack(side="bottom")
+        self.startLightOneB = tk.Button(self, text="Start One Lightbarrier", command=self.StartLightOne)
+        self.startLightOneB.pack(side="bottom")
+
+       # self.startLightTwoB = tk.Button(self, text="Start Both Lightbarriers", command=self.StartLightTwo)
+       # self.startLightTwoB.pack(side="bottom")
 
         self.stopLightB = tk.Button(self, text="Stop Lightbarrier", command=self.StopLight)
         self.stopLightB.pack(side="bottom")
@@ -62,22 +65,24 @@ class Application(tk.Frame):
     def StartCamera(self):
     # Objecttracking starts
        self.ChangeText("Status: Camera started")
-       
 
     def StopCamera(self):
     # Objecttracking stops
         self.ChangeText("Status: Camera stopped")
-        
 
-    def StartLight(self):
-    # Lightbarrier starts
-       self.ChangeText("Status: Lightbarrier started")
-       
+    def StartLightOne(self):
+    # One Lightbarrier starts
+       self.ChangeText("Status: One Lightbarrier started")  
+       Lightbarrier.runOneLightbarrierParallel()    
+
+  #  def StartLightTwo(self):
+    # Both Lightbarriers starts
+   #    self.ChangeText("Status: Two Lightbarriers started")  
+    #   Lightbarrier.runTwoLightbarriersParallel()
 
     def StopLight(self):
     # Lightbarrier stops
-        self.ChangeText("Status: Lightbarrier stopped")
-        
+        self.ChangeText("Status: Lightbarrier stopped")      
 
     def StartEngine(self):
     # Engine Tool starts
