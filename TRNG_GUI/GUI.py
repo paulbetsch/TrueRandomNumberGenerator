@@ -16,10 +16,10 @@ class Application(tk.Frame):
         self.pack() # packs all widgets into the main frame 
         self.create_widgets() 
 
-    def changeText(self, textnew): #updates status depending on which button was pushed
+    def ChangeText(self, textnew): #updates status depending on which button was pushed
         self.statusB.config(text = textnew) 
 
-    def create_widgets(self):
+    def CreateWidgets(self):
     # creating and packing buttons
         self.startCameraB = tk.Button(self, text="Start Camera", command=self.startCamera)
         self.startCameraB.pack(side="bottom")
@@ -52,40 +52,40 @@ class Application(tk.Frame):
         self.statusB.pack(side="bottom")
 
     
-    def startCamera(self):
+    def StartCamera(self):
        # Objecttracking starts
        self.changeText("Status: Camera started")
        
 
-    def stopCamera(self):
+    def StopCamera(self):
         # Objecttracking stops
         self.changeText("Status: Camera stopped")
         
 
-    def startLight(self):
+    def StartLight(self):
         # Lightbarrier starts
        #  Lightbarrier.__init__
        self.changeText("Status: Lightbarrier started")
        
 
-    def stopLight(self):
+    def StopLight(self):
         # Lightbarrier stops
         self.changeText("Status: Lightbarrier stopped")
         
 
-    def startEngine(self):
+    def StartEngine(self):
         # Engine Tool starts
         self.changeText("Status: Engine started")
 
-    def stopEngine(self):
+    def StopEngine(self):
         # Engine Tool stops
         self.changeText("Status: Engine stopped")
 
-    def startAll(self):
+    def StartAll(self):
         # All tools start
         self.changeText("Status: All tools started")
 
-    def stopAll(self):
+    def StopAll(self):
         # All tools stop
         self.changeText("Status: All tools stopped")
 
