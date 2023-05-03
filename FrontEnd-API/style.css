@@ -1,3 +1,4 @@
+
 .mitte{
     float: left;
     width: 100%;
@@ -5,12 +6,14 @@
     background-color: antiquewhite;
     
 }
+
 .mitte>h1{
     text-align: center;
     background-color:rgb(0, 109, 214);
     color: white;
 }
 .mitte>img{
+
     text-align: center;
     background-color:rgb(0, 109, 214);
     color: white;
@@ -28,6 +31,7 @@
  } 
  #result{
     font-size: 120%;
+
  }
  header{
     text-align: center;
@@ -56,3 +60,4 @@
   
 
   
+

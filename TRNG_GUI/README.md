@@ -1,0 +1,1 @@
+# GUI for all scripts of the TRNG
