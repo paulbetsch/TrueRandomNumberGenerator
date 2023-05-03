@@ -1,8 +1,10 @@
 $(document).ready(function() {
+    baseUrl = "http://localhost:5000/trng"
     // Initialize the random number generator
     $("#init-btn").click(function() {
         $.ajax({
-            url: "/randomNum/init",
+            url: baseUrl + "/randomNum/init",
+            headers: { 'Access-Control-Allow-Origin': '*'},
             type: "GET",
             success: function(response) {
                 if (response === "ok") {
@@ -20,7 +22,7 @@ $(document).ready(function() {
     // Shutdown the random number generator
     $("#shutdown-btn").click(function() {
         $.ajax({
-            url: "/randomNum/shutdown",
+            url: baseUrl + "/randomNum/shutdown",
             type: "GET",
             success: function(response) {
                 if (response === "ok") {
@@ -40,7 +42,7 @@ $(document).ready(function() {
         var quantity = $("#quantity-input").val();
         var numBits = $("#numBits-input").val();
         $.ajax({
-            url: "/randomNum/generate",
+            url: baseUrl + "/randomNum/generate",
             type: "GET",
             dataType: "json",
             data: {

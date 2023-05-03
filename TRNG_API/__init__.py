@@ -54,11 +54,15 @@ class InitRandomNums(Resource):
     def get(self):
         global TRNG_RUNNING
         if(TRNG_RUNNING):
-            return make_response(jsonify({'description': 'system already running'}), 200)
+            response = make_response(jsonify({'description': 'system already running'}), 200)
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            return response
         else:
             # time.sleep(60)
             TRNG_RUNNING = True
-            return make_response(jsonify({'description': 'system initialized'}), 200)
+            response = make_response(jsonify({'description': 'system initialized'}), 200)
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            return response
 
 # This endpoint shuts down the TRNG
 class ShutdownRandomNums(Resource):
