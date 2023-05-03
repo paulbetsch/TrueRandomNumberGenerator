@@ -3,9 +3,9 @@ import sys
 
 sys.path.insert(0, '../TRNG_Pendel') # inserting path for imports
 
-import Lightbarrier
-from KameraRaspberryPi import ObjectTracker
-# import PendelAnalyse
+#import Lightbarrier
+import KameraRaspberryPi.ObjectTracker as ot
+#from ObjectTracker import *
 
 
 class Application(tk.Frame):
@@ -68,8 +68,8 @@ class Application(tk.Frame):
        global CAMERA_RUNNING
        CAMERA_RUNNING = True
        if CAMERA_RUNNING == True:
+           # ot.CapturePendelum()
            self.ChangeText("Status: Camera running")
-           ObjectTracker.CapturePendelum()
 
     
 
@@ -91,8 +91,8 @@ class Application(tk.Frame):
        global LIGHT_RUNNING
        LIGHT_RUNNING = True
        if LIGHT_RUNNING == True:
-           self.ChangeText("Status: Camera running")
-           Lightbarrier.runOneLightbarrierParallel()    
+           # Lightbarrier.runOneLightbarrierParallel()  
+           self.ChangeText("Status: Lightbarrier running")  
 
   #  def StartLightTwo(self):
     # Both Lightbarriers starts
@@ -130,17 +130,17 @@ class Application(tk.Frame):
 
     def StartAll(self):
     # All tools start
-        self.ChangeText("Status: All tools started")
         self.StartCamera
         self.StartEngine
         self.StartLightOne
+        self.ChangeText("Status: All tools started")
 
     def StopAll(self):
     # All tools stop
-        self.ChangeText("Status: All tools stopped")
         self.StopCamera
         self.StopEngine
         self.StopLight
+        self.ChangeText("Status: All tools stopped")
 
 
 root = tk.Tk() # setting root
