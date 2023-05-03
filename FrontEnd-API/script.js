@@ -4,10 +4,10 @@ $(document).ready(function() {
     $("#init-btn").click(function() {
         $.ajax({
             url: baseUrl + "/randomNum/init",
-            headers: { 'Access-Control-Allow-Origin': '*'},
+            //headers: { 'Access-Control-Allow-Origin': '*'},
             type: "GET",
             success: function(response) {
-                if (response === "ok") {
+                if (response.status == 200) {
                     $("#init-status").text("Initialized");
                 } else {
                     $("#init-status").text("Failed to initialize");

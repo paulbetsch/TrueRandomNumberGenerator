@@ -9,6 +9,7 @@ TRNG_RUNNING = False
 
 # App configs (TODO: change to WSGI before Production)
 app = Flask(__name__)
+app.config['CORS_HEADERS'] = 'Content-Type'
 api = Api(app)
 api.prefix = '/trng'
 
@@ -45,9 +46,13 @@ class GetRandomNums(Resource):
             # Append the Hex Number to the array
             result.append(hexStr)
         if(len(result) > 0):
-            return make_response(result, 200)
+            response = make_response(result, 200)
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            return response
         else:
-            return make_response(jsonify({'description': 'system deliverd an empty array; check noise source'}), 500)
+            response = make_response(jsonify({'description': 'system deliverd an empty array; check noise source'}), 500)
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            return response
 
 # This endpoint initializes the TRNG and ensures that the endpoint GetRandomNums works.
 class InitRandomNums(Resource):
@@ -70,9 +75,13 @@ class ShutdownRandomNums(Resource):
         global TRNG_RUNNING
         if(TRNG_RUNNING):
             TRNG_RUNNING = False
-            return make_response(jsonify({'description': 'system shutdown'}), 200)
+            response = make_response(jsonify({'description': 'system shutdown'}), 200)
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            return response
         else:
-            return make_response(jsonify({'description': 'system already shutdown'}), 403)
+            response = make_response(jsonify({'description': 'system already shutdown'}), 403)
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            return response
 
 
 api.add_resource(GetRandomNums, '/randomNum/getRandom')
