@@ -3,12 +3,14 @@ import json
 import time
 from flask import Flask, request, jsonify, make_response
 from flask_restful import Resource, Api
+from flask_cors import CORS
 
 # Determines if Generating Random Numbers is possible
 TRNG_RUNNING = False
 
 # App configs (TODO: change to WSGI before Production)
 app = Flask(__name__)
+CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 api = Api(app)
 api.prefix = '/trng'
@@ -89,4 +91,5 @@ api.add_resource(InitRandomNums, '/randomNum/init')
 api.add_resource(ShutdownRandomNums, '/randomNum/shutdown')
 
 if __name__ == '__main__':
+
      app.run()
