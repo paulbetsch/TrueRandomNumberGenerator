@@ -3,6 +3,8 @@ from multiprocessing import Process, Manager
 from random import *
 from Lightbarrier import lightbarrier, startUpTestLightbarrier
 from KameraRaspberryPi import ObjectTracker
+from Engine import motor
+from Tests import TotalFailureTest
 
 # Wird von der REST-API geleitet
 __CONTROLLED_BY_API = False
@@ -17,7 +19,7 @@ class PendelManager:
         pass
 
     def __runEngine(self, running):
-        while(running):
+        while(running.value):
             motor.StartEngine(2,7)
         motor.StopEngine()
 
@@ -53,6 +55,8 @@ class PendelManager:
             engineProc.start()
             # Check if this works
             time.sleep(18)
+
+            #Set to false an terminate process if the quantity is reached
             running.value = False
 
             # TODO: Kontrolle der Prozesse; Erst Zahlen generieren und dann den Test
@@ -85,15 +89,14 @@ class PendelManager:
         return result
 
     # Statische Prüfung der Zufallszahlen
-    def checkBSITests():
-        print()
+    def checkBSITests(binaryData, ):
+        TotalFailureTest.TotalFailureTest(binaryData, False, 8)
 
 # Returns the only instance of the PendelManger class
 def GetInstance():
     return __manager
 
 # Wir können feststellen ob der Manager direkt gestartet wird
-# TODO überlegen ob wir hier ein singelton pattern umsetzen möchten
 if __name__ == '__main__':
     print("Executed when called directly")
     __CONTROLLED_BY_API = False
