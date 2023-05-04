@@ -5,7 +5,6 @@ from KameraRaspberryPi import ObjectTracker
 
 # Wird von der REST-API geleitet
 __CONTROLLED_BY_API = False
-
 __manager = ''
 
 # Die klasse sollte intern das multiprocessing verwalten
