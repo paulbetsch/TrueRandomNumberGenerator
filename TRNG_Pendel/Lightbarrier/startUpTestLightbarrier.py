@@ -1,7 +1,7 @@
 from lightbarrier import *
 import RPi.GPIO as GPIO
 
-def testReceiver():
+def testFunctionality():
     print("Starting Test for Receiver")
 
     amountOfErrors = 0
@@ -49,8 +49,3 @@ def testReceiver():
         print("Failure Test for lightbarriers passed!")
         lightbarrier.piepBuzzer(2)
         return True
-    
-
-
-
-#testReceiver()

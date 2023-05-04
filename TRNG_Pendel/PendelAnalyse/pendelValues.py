@@ -27,7 +27,7 @@ def berechnePendel(pendelnummer):
             if(progessCounter % 1000 == 0):
                 print(str(round((progessCounter / anzahlMittelpunkte * 100),2)) + "%")
             progessCounter += 1
-            neuePunkte += berechnePunkteAufKreis(50, punkt, 10000)
+            neuePunkte += berechnePunkteAufKreis(50, punkt, 1000)
             if(anzahl == pendelnummer-1):
                 for tupel in neuePunkte:
                     if wertebereich.get(tupel) == None:
@@ -72,35 +72,35 @@ print(generatePictureOutOfDictionary(berechnePendel(3)))
 #         mittelpunkte = neuePunkte
 #     return mittelpunkte
 
-# def maleKreis(radius, mittelpunkt, farbe, ax):
-#     circle = Circle(mittelpunkt, radius, fill=False, edgecolor=farbe)
-#     ax.add_patch(circle)
+def maleKreis(radius, mittelpunkt, farbe, ax):
+    circle = Circle(mittelpunkt, radius, fill=False, edgecolor=farbe)
+    ax.add_patch(circle)
 
-# def malePendel():
-#     mittelpunkte = berechnePendel(1)
-#     wertebereich = {}
-#     for tupel in mittelpunkte:
-#         if wertebereich.get(tupel) == None:
-#             wertebereich[tupel] = 1
-#         else:
-#             wertebereich[tupel] = wertebereich[tupel] +1
+def malePendel():
+    mittelpunkte = berechnePendel(1)
+    wertebereich = {}
+    for tupel in mittelpunkte:
+        if wertebereich.get(tupel) == None:
+            wertebereich[tupel] = 1
+        else:
+            wertebereich[tupel] = wertebereich[tupel] +1
 
-#     v = list(wertebereich.values())
-#     print(max(v))
-#     maxValue = max(v)
+    v = list(wertebereich.values())
+    print(max(v))
+    maxValue = max(v)
 
-#     maxi = len(wertebereich)
-#     counter = 0
-#     for tupel in wertebereich:
-#         if(counter % 10000 == 0):
-#             print(round(counter / maxi, 2))
-#         counter += 1
-#         plt.scatter(tupel[0], tupel[1], color='black', s=0.1 )
+    maxi = len(wertebereich)
+    counter = 0
+    for tupel in wertebereich:
+        if(counter % 10000 == 0):
+            print(round(counter / maxi, 2))
+        counter += 1
+        plt.scatter(tupel[0], tupel[1], color='black', s=0.1 )
 
-#     plt.savefig("c:/Users/Paul/Desktop/test1.png", format="png")
-#     print("Done")   
+    plt.savefig("c:/Users/Paul/Desktop/test1.png", format="png")
+    print("Done")   
 
-#     #plt.show()
+    #plt.show()
 
 # #malePendel()
 
