@@ -1,51 +1,48 @@
 from lightbarrier import *
 import RPi.GPIO as GPIO
+import time
 
 def testFunctionality():
     print("Starting Test for Receiver")
-
-    amountOfErrors = 0
+    failed = False
 
     ## Failure Test for Lightbarrier One and Laser One
-    lightbarrier.supplyLightSensorOne()
-    if(GPIO.input(lightbarrier.getLightSensorOneDOPin()) == 1):
-        print("Lightsensor One working correctly!")
-    else:
-        print("Lightsensor One causing Problems \n It could be that: \n 1. Lightsensor Module is not working properly")
-        amountOfErrors += 1
-
-    lightbarrier.supplyLaserOne()
-    if(GPIO.input(lightbarrier.getLightSensorOneDOPin()) == 0):
-        print("Lightsensor One working correctly!")
-    else:
-        print("Lightsensor One causing Problems \n It could be that: \n 1. Lightsensor and Laser are not alligned correctly \n 2. Laser is not working properly")
-        amountOfErrors += 1
+    print("Lightsensor One")
+    supplyLightSensorOne()
+    time.sleep(0.5)
+    if(GPIO.input(getLightSensorOneDOPin()) != 1):
+        print(" - Lightsensor Module is not working properly \n - Lightsensor Module is configured to sensitive \n - Lightbarrier is being manipulated by another Lightsource")
+        failed = True
+    supplyLaserOne()
+    time.sleep(0.5)
+    if(GPIO.input(getLightSensorOneDOPin()) != 0):
+        print(" - Lightsensor and Laser are not alligned correctly \n - Laser is not working properly")
+        failed = True
 
     ## Reset everything to normal 
-    lightbarrier.stopPowerAll()
+    stopPowerAll()
 
     ## Failure Test for Lightbarrier Two and Laser Two
-    lightbarrier.supplyLightSensorTwo()
-    if(GPIO.input(lightbarrier.getLightSensorTwoDOPin()) == 1):
-        print("Lightsensor Two working correctly!")
-    else:
-        print("Lightsensor Two causing Problems \n It could be that: \n 1. Lightsensor Module is not working properly")
-        amountOfErrors += 1
+    print("Lightsensor Two")
+    supplyLightSensorTwo()
+    time.sleep(0.5)
+    if(GPIO.input(getLightSensorTwoDOPin()) != 1):
+        print(" - Lightsensor Module is not working properly \n - Lightsensor Module is configured to sensitive \n - Lightbarrier is being manipulated by another Lightsource")
+        failed = True
+    supplyLaserTwo()
+    time.sleep(0.5)
+    if(GPIO.input(getLightSensorTwoDOPin()) != 0):
+        print(" - Lightsensor and Laser are not alligned correctly \n - Laser is not working properly")
+        failed = True
+    
+    stopPowerAll()
 
-    lightbarrier.supplyLaserTwo()
-    if(GPIO.input(lightbarrier.getLightSensorTwoDOPin()) == 0):
-        print("Lightsensor Two working correctly!")
-    else:
-        print("Lightsensor Two causing Problems \n It could be that: \n 1. Lightsensor and Laser are not alligned correctly \n 2. Laser is not working properly")
-        amountOfErrors += 1
-
-    lightbarrier.stopPowerAll()
-
-    if(amountOfErrors > 0):
+    if(failed):
         print("Failure of lightbarrier dected!")
-        lightbarrier.piepBuzzer(5)
+        piepBuzzer(5)
         return False
     else:
         print("Failure Test for lightbarriers passed!")
-        lightbarrier.piepBuzzer(2)
+        piepBuzzer(2)
         return True
+    
