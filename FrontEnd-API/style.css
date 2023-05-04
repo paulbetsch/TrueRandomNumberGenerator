@@ -1,63 +1,59 @@
 
 .mitte{
-    float: left;
-    width: 100%;
-    border: 1px solid black;
-    background-color: antiquewhite;
-    
+   float: left;
+   width: 100%;
+   border: 1px solid black;
+   background-color: rgb(229, 229, 229);
+   
 }
 
 .mitte>h1{
-    text-align: center;
-    background-color:rgb(0, 109, 214);
-    color: white;
+   text-align: center;
+   background-color:rgb(0, 109, 214);
+   color: white;
 }
 .mitte>img{
 
-    text-align: center;
-    background-color:rgb(0, 109, 214);
-    color: white;
+   text-align: center;
+   background-color:rgb(0, 109, 214);
+   color: white;
 }
 
-#init-btn, #shutdown-btn{
-    margin-bottom: 20px;
-  }
-
- #status{
-    font: bold;
-    text-align: left;
-    font-size: 120%;
-
- } 
- #result{
-    font-size: 120%;
-
+#init-btn, #shutdown-btn, #generate-btn{
+   margin-bottom: 20px;
  }
- header{
-    text-align: center;
+
+#status{
+   font: bold;
+   text-align: center;
+   font-size: 120%;
+
+} 
+#result{
+   font-size: 120%;
+
+}
+header{
+   text-align: center;
+}
+.mitte>form{
+
+   text-align: center;
+
+}
+form label {
+   display: inline-block;
+   width: 120px;
+   text-align: center;
+   margin-right: 10px;
  }
- .mitte>form{
 
-    text-align: center;
-
+ 
+ form input[type="number"] {
+   display: inline-block;
+   width: 100px;
  }
- form label {
-    display: inline-block;
-    width: 80px;
-    text-align: left;
-    margin-right: 10px;
-  }
-  
-  form input[type="number"] {
-    display: inline-block;
-    width: 90px;
-  }
-  button {
-    width: 100px;
-    height:25px;
-    font-size: 16px;
-  }
-  
+ 
 
-  
+ 
 
