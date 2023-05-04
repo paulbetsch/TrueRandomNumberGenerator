@@ -1,3 +1,4 @@
+import time
 from multiprocessing import Process, Manager
 from random import *
 from Lightbarrier import lightbarrier, startUpTestLightbarrier
@@ -46,13 +47,13 @@ class PendelManager:
             videoProc = Process(target=ObjectTracker.__main__(), args=resultValue)
             procs.append(videoProc)
 
-            ligtProc = Process(target=lightbarrier.__main__(), args=resultValue)
-            procs.append(ligtProc)
+            #ligtProc = Process(target=lightbarrier.__main__(), args=resultValue)
+            #procs.append(ligtProc)
 
             engineProc.start()
+            # Check if this works
             time.sleep(18)
-            running = False
-            engineProc.terminate()
+            running.value = False
 
             # TODO: Kontrolle der Prozesse; Erst Zahlen generieren und dann den Test
             
