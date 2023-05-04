@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./TRNG_Pendel",
+        "./TRNG_Pendel/KameraRaspberryPi"
+    ]
+}
