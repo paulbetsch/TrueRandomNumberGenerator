@@ -4,7 +4,9 @@ from Lightbarrier import lightbarrier, startUpTestLightbarrier
 from KameraRaspberryPi import ObjectTracker
 
 # Wird von der REST-API geleitet
-CONTROLLED_BY_API = False
+__CONTROLLED_BY_API = False
+
+__manager = ''
 
 # Die klasse sollte intern das multiprocessing verwalten
 class PendelManager:
@@ -12,6 +14,11 @@ class PendelManager:
     def __init__(self, controlledByAPI):
         self.manager = Manager()
         pass
+
+    def __runEngine(self, running):
+        while(running):
+            motor.StartEngine(2,7)
+        motor.StopEngine()
 
     # Wird später aufgerufen um die Funktionalität der Lichtschranke, der Kamera und der Motorisierung des Pendels zu gewährleisten.
     def checkFunctionality(returnValue):
@@ -29,13 +36,23 @@ class PendelManager:
         # TODO hier sollten die anderen Processe gestartet werden
         with self.manager as m:
             procs = []
+            engineArgs = []
+            running = m.Value(bool, True)
+            engineArgs.append(running)
             # TODO Wir müssen öffentliche run methoden für die einzelnen Scripte nutzen
-            # engineProc = Process(target=EngineControl.run())
-            #procs.append(engineProc)
+            engineProc = Process(target=self.__runEngine, args=engineArgs)
+            procs.append(engineProc)
+
             videoProc = Process(target=ObjectTracker.__main__(), args=resultValue)
             procs.append(videoProc)
+
             ligtProc = Process(target=lightbarrier.__main__(), args=resultValue)
             procs.append(ligtProc)
+
+            engineProc.start()
+            time.sleep(18)
+            running = False
+            engineProc.terminate()
 
             # TODO: Kontrolle der Prozesse; Erst Zahlen generieren und dann den Test
             
@@ -70,13 +87,19 @@ class PendelManager:
     def checkBSITests():
         print()
 
+# Returns the only instance of the PendelManger class
+def GetInstance():
+    return __manager
+
 # Wir können feststellen ob der Manager direkt gestartet wird
 # TODO überlegen ob wir hier ein singelton pattern umsetzen möchten
 if __name__ == '__main__':
     print("Executed when called directly")
-    CONTROLLED_BY_API = False
+    __CONTROLLED_BY_API = False
+    __manager = PendelManager(__CONTROLLED_BY_API)
 
 # oder ob er von der API aus aufgerufen wird.            
 else:
-    CONTROLLED_BY_API = True
     print("Executed when imported.")
+    __CONTROLLED_BY_API = True
+    __manager = PendelManager(__CONTROLLED_BY_API)
