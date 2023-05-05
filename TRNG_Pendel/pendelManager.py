@@ -1,6 +1,6 @@
 import time
+import random
 from multiprocessing import Process, Manager, Event
-from random import *
 from Lightbarrier import lightbarrier, startUpTestLightbarrier
 from KameraRaspberryPi import ObjectTracker
 from Engine import motor
