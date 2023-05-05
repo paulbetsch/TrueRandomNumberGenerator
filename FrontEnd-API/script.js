@@ -10,10 +10,10 @@ $(document).ready(function () {
       //headers: { 'Access-Control-Allow-Origin': '*'},
       type: "GET",
       success: function () {
-        $("#init-status").text("Initialized");
+        $("#init-status").text("Initialized.");
       },
       error: function (jqXHR, textStatus, errorThrown) {
-        $("#init-status").text("Failed to initialize");
+        $("#init-status").text("Failed to initialize.");
       },
     });
   });
@@ -24,10 +24,10 @@ $(document).ready(function () {
       url: baseUrl + "/randomNum/shutdown",
       type: "GET",
       success: function () {
-        $("#init-status").text("Standby mode");
+        $("#init-status").text("Standby mode.");
       },
       error: function (jqXHR, textStatus, errorThrown) {
-        $("#init-status").text("Failed to shutdown");
+        $("#init-status").text("Failed to shutdown.");
       },
     });
   });
@@ -45,17 +45,17 @@ $(document).ready(function () {
         numBits: numBits,
       },
       success: function (response) {
-        $("#result").text(JSON.stringify(response));
+        $("Result" + "#result").text(JSON.stringify(response));
       },
       error: function (jqXHR, textStatus, errorThrown) {
         if (jqXHR.status === 500) {
-          $("#result").text(
-            "System deliverd an empty array; check noise source"
+          $("#init-status").text(
+            "System deliverd an empty array; check noise source."
           );
         } else if (jqXHR.status === 432) {
-          $("#result").text("System not ready; Initalize again");
+          $("#init-status").text("System not ready; Initalize again.");
         }else{
-            $("#result").text("Error: "+errorThrown);
+            $("#init-status").text("API has not been started yet. "+errorThrown);
 
         }
       },
