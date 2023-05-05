@@ -1,7 +1,10 @@
-from multiprocessing import Process, Manager
-from random import *
+import time
+import random
+from multiprocessing import Process, Manager, Event
 from Lightbarrier import lightbarrier, startUpTestLightbarrier
 from KameraRaspberryPi import ObjectTracker
+from Engine import motor
+from Tests import TotalFailureTest
 
 # Wird von der REST-API geleitet
 __CONTROLLED_BY_API = False
@@ -9,13 +12,12 @@ __manager = ''
 
 # Die klasse sollte intern das multiprocessing verwalten
 class PendelManager:
-    # TODO implement multiprocessing for small private functions
     def __init__(self, controlledByAPI):
         self.manager = Manager()
         pass
 
-    def __runEngine(self, running):
-        while(running):
+    def __runEngine(self, stopEvent):
+        while(not stopEvent.is_set()):
             motor.StartEngine(2,7)
         motor.StopEngine()
 
@@ -36,8 +38,8 @@ class PendelManager:
         with self.manager as m:
             procs = []
             engineArgs = []
-            running = m.Value(bool, True)
-            engineArgs.append(running)
+            stopEvent = Event()
+            engineArgs.append(stopEvent)
             # TODO Wir müssen öffentliche run methoden für die einzelnen Scripte nutzen
             engineProc = Process(target=self.__runEngine, args=engineArgs)
             procs.append(engineProc)
@@ -45,23 +47,26 @@ class PendelManager:
             videoProc = Process(target=ObjectTracker.__main__(), args=resultValue)
             procs.append(videoProc)
 
-            ligtProc = Process(target=lightbarrier.__main__(), args=resultValue)
-            procs.append(ligtProc)
+            #ligtProc = Process(target=lightbarrier.__main__(), args=resultValue)
+            #procs.append(ligtProc)
 
             engineProc.start()
+            # Check if this works
             time.sleep(18)
-            running = False
-            engineProc.terminate()
 
+            #Set to false an terminate process if the quantity is reached
+            stopEvent.set()
+            time.sleep(1)
+            engineProc.terminate()
             # TODO: Kontrolle der Prozesse; Erst Zahlen generieren und dann den Test
             
             # Aufbereitung der Daten für die API
             # counter for len of result array
             i = 0
             # len of result array given by parameter
-            quantity # = request.args.get('quantity', default=1, type=int)
+            quantity = 10# = request.args.get('quantity', default=1, type=int)
             #len of the random Bits
-            numBits # = request.args.get('numBits', default=1, type=int)
+            numBits = 10# = request.args.get('numBits', default=1, type=int)
             # calculate the len of the result numbers to fill in leading zeroes if wanted.
             numHexDigits = (numBits + 3) // 4
             #resultArray which will be returned
@@ -83,15 +88,14 @@ class PendelManager:
         return result
 
     # Statische Prüfung der Zufallszahlen
-    def checkBSITests():
-        print()
+    def checkBSITests(binaryData, ):
+        TotalFailureTest.TotalFailureTest(binaryData, False, 8)
 
 # Returns the only instance of the PendelManger class
 def GetInstance():
     return __manager
 
 # Wir können feststellen ob der Manager direkt gestartet wird
-# TODO überlegen ob wir hier ein singelton pattern umsetzen möchten
 if __name__ == '__main__':
     print("Executed when called directly")
     __CONTROLLED_BY_API = False
