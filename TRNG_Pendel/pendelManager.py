@@ -1,5 +1,5 @@
 import time
-from multiprocessing import Process, Manager
+from multiprocessing import Process, Manager, Event
 from random import *
 from Lightbarrier import lightbarrier, startUpTestLightbarrier
 from KameraRaspberryPi import ObjectTracker
@@ -12,13 +12,12 @@ __manager = ''
 
 # Die klasse sollte intern das multiprocessing verwalten
 class PendelManager:
-    # TODO implement multiprocessing for small private functions
     def __init__(self, controlledByAPI):
         self.manager = Manager()
         pass
 
-    def __runEngine(self, running):
-        while(running.value):
+    def __runEngine(self, stopEvent):
+        while(not stopEvent.is_set()):
             motor.StartEngine(2,7)
         motor.StopEngine()
 
@@ -39,8 +38,8 @@ class PendelManager:
         with self.manager as m:
             procs = []
             engineArgs = []
-            running = m.Value(bool, True)
-            engineArgs.append(running)
+            stopEvent = Event()
+            engineArgs.append(stopEvent)
             # TODO Wir müssen öffentliche run methoden für die einzelnen Scripte nutzen
             engineProc = Process(target=self.__runEngine, args=engineArgs)
             procs.append(engineProc)
@@ -56,17 +55,18 @@ class PendelManager:
             time.sleep(18)
 
             #Set to false an terminate process if the quantity is reached
-            running.value = False
-
+            stopEvent.set()
+            time.sleep(1)
+            engineProc.terminate()
             # TODO: Kontrolle der Prozesse; Erst Zahlen generieren und dann den Test
             
             # Aufbereitung der Daten für die API
             # counter for len of result array
             i = 0
             # len of result array given by parameter
-            quantity # = request.args.get('quantity', default=1, type=int)
+            quantity = 10# = request.args.get('quantity', default=1, type=int)
             #len of the random Bits
-            numBits # = request.args.get('numBits', default=1, type=int)
+            numBits = 10# = request.args.get('numBits', default=1, type=int)
             # calculate the len of the result numbers to fill in leading zeroes if wanted.
             numHexDigits = (numBits + 3) // 4
             #resultArray which will be returned
