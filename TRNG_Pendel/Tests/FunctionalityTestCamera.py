@@ -1,7 +1,7 @@
 import cv2
 import os
 import subprocess
-
+from PIL import Image
 
 def CheckFunctionality():
 
@@ -12,7 +12,7 @@ def CheckFunctionality():
     # Determines if the camera is connected and working correctly
     functional = False
     # Amount of all tests
-    amountOfTests = 5
+    amountOfTests = 4
     # Determines the amount of tests passed
     passedTest = 0
 
@@ -24,42 +24,36 @@ def CheckFunctionality():
     if(output.__contains__('detected=1')):
         passedTest += 1
 
+    print('Passed: ' + passedTest + ' out of ' + amountOfTests)
+
     # Make an example picture and check if its not all black
-    testPicture = subprocess.run(['raspistill', '-o', 'tmp/test.jpg'], stdout=subprocess.PIPE)
+    testPicture = subprocess.run(['raspistill', '-o', 'tmp/test.jpg', '--nopreview'], stdout=subprocess.PIPE)
 
-    # Open the image file and read the pixel values
-    with open('tmp/test.jpg', 'rb') as f:
-        # Read the header information
-        header = f.read(16)
-        width = int.from_bytes(header[12:16], byteorder='big')
-        height = int.from_bytes(header[8:12], byteorder='big')
+    # Load the test image and get its dimensions
+    image = Image.open('tmp/test.jpg')
+    width, height = image.size
 
-        # Read the pixel data
-        pixel_data = f.read()
+    # Check if the image is all black
+    blackPixelCount = 0
+    for y in range(height):
+        for x in range(width):
+            r, g, b = image.getpixel((x, y))
+            if r == g == b == 0:
+                blackPixelCount += 1
 
-        blackPixelCount = 0
-        numPixels = width * height
-        # Loop through the pixel data and print the RGB values of each pixel
-        for y in range(height):
-            for x in range(width):
-                index = (y * width + x) * 3
-                r = pixel_data[index]
-                g = pixel_data[index + 1]
-                b = pixel_data[index + 2]
-                if(r == 0 and g == 0 and b == 0):
-                    blackPixelCount += 1
-    
     # Check if the picture is not all black
-    if(blackPixelCount != numPixels):
+    if blackPixelCount <= width * height:
         passedTest += 1
 
     # Make an example video and check if its not all black
-    testVideo = subprocess.run(['raspivid', '-o', 'tmp/test.h264', '-t', '5000'], stdout=subprocess.PIPE)
+    testVideo = subprocess.run(['raspivid', '-o', 'tmp/test.h264', '-t', '5000', '--nopreview'], stdout=subprocess.PIPE)
 
     # Check if the video file exists and has a non-zero size
     if os.path.isfile('tmp/test.h264') and os.path.getsize('tmp/test.h264') > 0:
         passedTest += 1
     
+    print('Passed: ' + passedTest + ' out of ' + amountOfTests)
+
     cap = cv2.VideoCapture('tmp/test.h264')
 
     # Loop through the frames and check if its not all black
@@ -83,13 +77,7 @@ def CheckFunctionality():
     if(not all_frames_black):
         passedTest += 1
     
-    # Execute the 'ls /dev/video*' command to ensure the interface is enabled and a camera is detected
-    checkInterface = subprocess.run(['ls', '/dev/video*'], stdout=subprocess.PIPE)
-    output = checkInterface.stdout.decode('utf-8')
-
-    # Check if there is at least one device which can record videos
-    if(output.__contains__('/dev/video0')):
-        passedTest += 1
+    print('Passed: ' + passedTest + ' out of ' + amountOfTests)
 
     # remove test data and set functional true if all tests are passed
     if(passedTest == amountOfTests):

@@ -24,7 +24,7 @@ class PendelManager:
     # Wird später aufgerufen um die Funktionalität der Lichtschranke, der Kamera und der Motorisierung des Pendels zu gewährleisten.
     def checkFunctionality(returnValue):
         checkSuccessful = False
-        #lightbarrier.functionalityTest()
+        #camera.functionalityTest()
         #enginecontrol.startuptest()
         #camera.startuptest()
         #if(ligtbarrier and enginecontrol and camera):
@@ -98,6 +98,7 @@ def GetInstance():
 # Wir können feststellen ob der Manager direkt gestartet wird
 if __name__ == '__main__':
     print("Executed when called directly")
+    # Eventuell können wir hier eine Menüführung über CLI implementieren
     __CONTROLLED_BY_API = False
     __manager = PendelManager(__CONTROLLED_BY_API)
 
