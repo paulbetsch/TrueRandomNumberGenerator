@@ -274,7 +274,9 @@ def Run():
     #WriteToCsv(results)
     shannonEntropy("binarynumbers.txt")
     verteilung("binarynumbers.txt")
-    
+
+if __name__ == '__main__':
+    pass
 
 Run()
 
