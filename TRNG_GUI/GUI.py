@@ -5,7 +5,8 @@ sys.path.insert(0, '../TRNG_Pendel') # inserting path for imports
 
 #import Lightbarrier
 import KameraRaspberryPi.ObjectTracker as ot
-import CodeSnippets.controls as co
+#import CodeSnippets.controls as co
+import Engine.motor as mt
 #from ObjectTracker import *
 
 
@@ -116,7 +117,7 @@ class Application(tk.Frame):
         global ENGINE_RUNNING
         ENGINE_RUNNING = True
         if ENGINE_RUNNING == True:
-           co.run()
+           mt.StartEngine
            self.ChangeText("Status: Engine running")
            
 
@@ -127,7 +128,7 @@ class Application(tk.Frame):
         if ENGINE_RUNNING == False:
            self.ChangeText("Status: Engine is not running")
         elif ENGINE_RUNNING == True:
-            ENGINE_RUNNING = False
+            mt.StopEngine
             self.ChangeText("Status: Engine stopped") 
 
     def StartAll(self):
