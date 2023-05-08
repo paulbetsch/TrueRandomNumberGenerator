@@ -1,13 +1,33 @@
 import tkinter as tk
 import sys
+import threading
 
 sys.path.insert(0, '../TRNG_Pendel') # inserting path for imports
 
 #import Lightbarrier
-import KameraRaspberryPi.ObjectTracker as ot
+import KameraRaspberryPi.ObjectTracker1 as ot
 #import CodeSnippets.controls as co
 import Engine.motor as mt
 #from ObjectTracker import *
+
+class cameraThread(threading.Thread):
+    def __init__(self, threadID, name):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+    
+    def run(self):
+        ot.CapturePendelumTest(100000)
+        
+class engineThread(threading.Thread):
+    def __init__(self, threadID, name):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+    
+    def run(self):
+        mt.StartEngine(3, 6.5)
+        
 
 
 class Application(tk.Frame):
@@ -61,7 +81,7 @@ class Application(tk.Frame):
         self.result_label.pack(side="top")
 
         self.statusB = tk.Label(self, text="Status: null")
-        self.statusB.pack(side="bottom")
+        self.statusB.pack(side="top")
 
     
     def StartCamera(self):
@@ -70,7 +90,8 @@ class Application(tk.Frame):
        global CAMERA_RUNNING
        CAMERA_RUNNING = True
        if CAMERA_RUNNING == True:
-           # ot.CapturePendelum()
+           thread1 = cameraThread(1, "Camera")
+           thread1.start()
            self.ChangeText("Status: Camera running")
 
     
@@ -82,6 +103,8 @@ class Application(tk.Frame):
         if CAMERA_RUNNING == False:
            self.ChangeText("Status: Camera is not running")
         elif CAMERA_RUNNING == True:
+           # thread1.stop()
+            print("KAMERA STOP")
             CAMERA_RUNNING = False
             self.ChangeText("Status: Camera stopped")
 
@@ -113,12 +136,14 @@ class Application(tk.Frame):
 
     def StartEngine(self):
     # Engine Tool starts
-        self.ChangeText("Status: Engine started")  
-        global ENGINE_RUNNING
-        ENGINE_RUNNING = True
-        if ENGINE_RUNNING == True:
-           mt.StartEngine
-           self.ChangeText("Status: Engine running")
+     global ENGINE_RUNNING
+     ENGINE_RUNNING = True
+     if ENGINE_RUNNING == True:
+        thread2 = engineThread(2, "Engine")
+        thread2.start()
+        self.ChangeText("Status: Engine is running")   
+     self.ChangeText("Status: Engine started")  
+           
            
 
     def StopEngine(self):
@@ -129,7 +154,9 @@ class Application(tk.Frame):
            self.ChangeText("Status: Engine is not running")
         elif ENGINE_RUNNING == True:
             mt.StopEngine
+            ENGINE_RUNNING = False
             self.ChangeText("Status: Engine stopped") 
+        
 
     def StartAll(self):
     # All tools start
@@ -148,6 +175,6 @@ class Application(tk.Frame):
 
 root = tk.Tk() # setting root
 root.title("Tool Management") # naming the frame
-root.geometry("500x300") # setting size
+root.geometry("600x400") # setting size
 app = Application(master=root) # initializing application
 app.mainloop() # starting application 
