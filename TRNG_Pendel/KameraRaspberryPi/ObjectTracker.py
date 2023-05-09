@@ -23,8 +23,8 @@ UPPER_BLACK = (255, 255, 55)
 
 #Mittelpunkt für Polar Koordinaten System
 
-X_MIDDLE = 328
-Y_MIDDLE = 205
+X_MIDDLE = 323
+Y_MIDDLE = 235
 
 #Minimum Fläche für Punkt
 
@@ -75,7 +75,7 @@ def rangeToBits(XList, x0, file):
         found = False
         if x < x0:
             while found == False and i < len(pixelRangesLeft) - 1:
-                if x < pixelRangesLeft[i] and x > pixelRangesLeft[i+1]:
+                if x <= pixelRangesLeft[i] and x > pixelRangesLeft[i+1]:
                     #print(str(pixelRangesLeft[i]) +  " > " + str(x)  + " > " + str(pixelRangesLeft[i+1]))
                     found = True
                     write("0", file)
@@ -84,7 +84,7 @@ def rangeToBits(XList, x0, file):
                 write("1", file)
         else:
             while found == False and i < len(pixelRangesRight) - 1:
-                if x > pixelRangesRight[i] and x < pixelRangesRight[i+1]:
+                if x > pixelRangesRight[i] and x <= pixelRangesRight[i+1]:
                     #print(str(pixelRangesRight[i]) +  " < " + str(x)  + " < " + str(pixelRangesRight[i+1]))
                     found = True
                     write("1", file)
@@ -124,11 +124,13 @@ def LsbFloat(liste1, file):
 def Capture(numbits):
     timestamp = time.time()
     StartEngine(3, 0, True);
+    time.sleep(0.5)
     print("GO")
     while True:            
         if time.time() - timestamp > 10:
             StartEngine(2, 0, True);
             timestamp = time.time()
+            time.sleep(0.5)
         #time.sleep(0.02)
         ret, frame = cap.read()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -147,7 +149,7 @@ def Capture(numbits):
                     center = (float(x), float(y))
                     radius = int(radius)
                     #Kreis zum Mittelpunkt
-                    cv2.circle(frame, (int(X_MIDDLE), int(Y_MIDDLE)), 2, (255, 255, 255), 2)
+                    cv2.circle(frame, (int(X_MIDDLE), int(Y_MIDDLE)), 2, (255, 255, 255), 1)
                     # Kreis zum schwarzen Punkt 
                     cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), 2)
                     #Linie zu Punkt
@@ -166,14 +168,14 @@ def Capture(numbits):
                     #Ausgabe 
                     
                     if winkel > 0 and distanz < 220:  
-                        print(" -- LOWER -- count: " + str(len(LOWER_WINKEL_LIST) + 1) + "\n" + "   x   : " + str(float(x)) + "\n" + "   Y   : " + str(float(y)) +"\n" + "Winkel : " + str(winkel) + "\n"+ "Abstand: " + str(distanz) + "\n" + "----------------------------")
+                        #print(" -- LOWER -- count: " + str(len(LOWER_WINKEL_LIST) + 1) + "\n" + "   x   : " + str(float(x)) + "\n" + "   Y   : " + str(float(y)) +"\n" + "Winkel : " + str(winkel) + "\n"+ "Abstand: " + str(distanz) + "\n" + "----------------------------")
                         LOWER_XCOORD_LIST.append(float(x))
                         LOWER_YCOORD_LIST.append(float(y))
                         LOWER_DISTANZ_LIST.append(distanz)
                         LOWER_WINKEL_LIST.append(winkel)
                         LOWER_TIMESTAMPS.append(time.time())
                     elif winkel < 0 and distanz <220:
-                        print(" -- UPPER -- count: " + str(len(UPPER_WINKEL_LIST) + 1)  + "\n" + "   x   : " + str(float(x)) + "\n" + "   Y   : " + str(float(y)) +"\n" + "Winkel : " + str(winkel) + "\n"+ "Abstand: " + str(distanz) + "\n" + "----------------------------")
+                        #print(" -- UPPER -- count: " + str(len(UPPER_WINKEL_LIST) + 1)  + "\n" + "   x   : " + str(float(x)) + "\n" + "   Y   : " + str(float(y)) +"\n" + "Winkel : " + str(winkel) + "\n"+ "Abstand: " + str(distanz) + "\n" + "----------------------------")
                         UPPER_XCOORD_LIST.append(float(x))
                         UPPER_YCOORD_LIST.append(float(y))
                         UPPER_DISTANZ_LIST.append(distanz)
@@ -181,6 +183,7 @@ def Capture(numbits):
                         UPPER_TIMESTAMPS.append(time.time())
                    
                     if distanz < 220:
+                        print("Bits: " + str(len(XCOORD_LIST) * 2))
                         XCOORD_LIST.append(float(x))
                         YCOORD_LIST.append(float(y))
                         DISTANZ_LIST.append(distanz)
@@ -196,7 +199,8 @@ def Capture(numbits):
             print("Break")
             while True:
                 if cv2.waitKey(1) & 0xFF == ord('b'):
-                    break     
+                    print("Go")
+                    break       
                 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             Coords(UPPER_XCOORD_LIST, UPPER_YCOORD_LIST, UPPER_DISTANZ_LIST, UPPER_WINKEL_LIST, UPPER_TIMESTAMPS, 'outputUpper.csv')
@@ -208,7 +212,8 @@ def Capture(numbits):
             WinkelToHex32(LOWER_WINKEL_LIST, "LowerHexBits32.txt")
             LsbFloat(WINKEL_LIST, "WinkelLsb.txt")
             LsbFloat(DISTANZ_LIST, "DistanzLsb.txt")
-            rangeToBits(XCOORD_LIST, X_MIDDLE, "rangeBits.txt")
+            rangeToBits(XCOORD_LIST, X_MIDDLE, "rangeBitsX.txt")
+            rangeToBits(YCOORD_LIST, Y_MIDDLE, "rangeBitsY.txt")
             break
         
         #elif len(LOWER_WINKEL_LIST) > (numbits / 4) or len(UPPER_WINKEL_LIST) > (numbits / 4) or len(XCOORD_LIST) > numbits:
@@ -222,7 +227,8 @@ def Capture(numbits):
             LsbFloat(DISTANZ_LIST, "DistanzLsb.txt")
             WinkelToHex32(UPPER_WINKEL_LIST, "UpperHexBits32.txt")
             WinkelToHex32(LOWER_WINKEL_LIST, "LowerHexBits32.txt")
-            rangeToBits(XCOORD_LIST, X_MIDDLE, "rangeBits.txt")
+            rangeToBits(XCOORD_LIST, X_MIDDLE, "rangeBitsX.txt")
+            rangeToBits(YCOORD_LIST, Y_MIDDLE, "rangeBitsY.txt")
             break
 
     cap.release()
