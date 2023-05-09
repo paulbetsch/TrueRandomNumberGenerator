@@ -100,12 +100,14 @@ class Application(tk.Frame):
     # Objecttracking and Engine starts
        self.ChangeText("Status: Camera started")
        global CAMERA_RUNNING
-       CAMERA_RUNNING = True
-       if CAMERA_RUNNING == True:
-           thread1 = cameraThread(1, "Camera")
-           thread1.start()
-           self.ChangeText("Status: Camera running, press 'b' to pause")
-
+       if ENGINE_RUNNING == False:
+            CAMERA_RUNNING = True
+            if CAMERA_RUNNING == True:
+                thread1 = cameraThread(1, "Camera")
+                thread1.start()
+                self.ChangeText("Status: Camera running - press 'b' to pause")
+       elif ENGINE_RUNNING == True:
+           self.ChangeText("Engine is running - can't start Camera")
     
 
     def StopCamera(self):
@@ -149,12 +151,15 @@ class Application(tk.Frame):
     def StartEngine(self):
     # Engine Tool starts
      global ENGINE_RUNNING
-     ENGINE_RUNNING = True
-     if ENGINE_RUNNING == True:
-        thread2 = engineThread(2, "Engine")
-        thread2.start()
-        self.ChangeText("Status: Engine is running")   
-     self.ChangeText("Status: Engine started")  
+     if CAMERA_RUNNING == False:
+        ENGINE_RUNNING = True
+        if ENGINE_RUNNING == True:
+            thread2 = engineThread(2, "Engine")
+            thread2.start()
+            self.ChangeText("Status: Engine is running")   
+        self.ChangeText("Status: Engine started")
+     elif CAMERA_RUNNING == True:
+        self.ChangeText("Camera is running - can't start Engine")
            
            
 
