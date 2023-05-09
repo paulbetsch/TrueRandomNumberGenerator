@@ -3,11 +3,11 @@ import os
 import subprocess
 from PIL import Image
 
+# This method checks the functionality of the Raspberry Pi Camera Module
 def CheckFunctionality():
 
     # Create tmp directory for testing picture and video
     os.mkdir('tmp')
-    tempdir = subprocess.run(['raspistill', '-o', 'tmp/test.jpg'], stdout=subprocess.PIPE)
 
     # Determines if the camera is connected and working correctly
     functional = False
@@ -24,7 +24,7 @@ def CheckFunctionality():
     if(output.__contains__('detected=1')):
         passedTest += 1
 
-    print('Passed: ' + passedTest + ' out of ' + amountOfTests)
+    print('Passed: ' + str(passedTest) + ' out of ' + str(amountOfTests))
 
     # Make an example picture and check if its not all black
     testPicture = subprocess.run(['raspistill', '-o', 'tmp/test.jpg', '--nopreview'], stdout=subprocess.PIPE)
@@ -45,6 +45,8 @@ def CheckFunctionality():
     if blackPixelCount <= width * height:
         passedTest += 1
 
+    print('Passed: ' + str(passedTest) + ' out of ' + str(amountOfTests))
+
     # Make an example video and check if its not all black
     testVideo = subprocess.run(['raspivid', '-o', 'tmp/test.h264', '-t', '5000', '--nopreview'], stdout=subprocess.PIPE)
 
@@ -52,7 +54,7 @@ def CheckFunctionality():
     if os.path.isfile('tmp/test.h264') and os.path.getsize('tmp/test.h264') > 0:
         passedTest += 1
     
-    print('Passed: ' + passedTest + ' out of ' + amountOfTests)
+    print('Passed: ' + str(passedTest) + ' out of ' + str(amountOfTests))
 
     cap = cv2.VideoCapture('tmp/test.h264')
 
@@ -77,11 +79,11 @@ def CheckFunctionality():
     if(not all_frames_black):
         passedTest += 1
     
-    print('Passed: ' + passedTest + ' out of ' + amountOfTests)
+    print('Passed: ' + str(passedTest) + ' out of ' + str(amountOfTests))
 
     # remove test data and set functional true if all tests are passed
     if(passedTest == amountOfTests):
-        os.remove('tmp')
+        os.rmdir('tmp')
         functional = True
 
     return functional
