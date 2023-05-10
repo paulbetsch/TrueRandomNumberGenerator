@@ -27,39 +27,28 @@ class PendelManager:
     # Hier soll der Motor gesteuert werden, und die Werte der Kamera und der Lichtschranke ausgewertet werden
     # Aktuell zu Testzwecken werden hier nur pseudozufallszahlen generiert
     def generateRandomBits(self, quantity, numBits):
-        # TODO hier sollten die anderen Processe gestartet werden
+        #resultArray which will be returned
+        result = []
         with self.manager as m:
+            #Process storage
             procs = []
+            # Shared Memory for Random Bits
             randomValues = m.list()
+            stopEvent = Event()
 
-            amountOfBits = numBits * quantity
-            videoProc = Process(target=ObjectTracker.CapturePendelum, args=(numBits, randomValues))
+            videoProc = Process(target=ObjectTracker.CapturePendelum, args=(stopEvent, randomValues))
             procs.append(videoProc)
 
-            # TODO: Kontrolle der Prozesse; Erst Zahlen generieren und dann den Test
+            # Start the generation of random values
             videoProc.start()
 
-            # Aufbereitung der Daten für die API
-            # counter for len of result array
-            i = 0
-            # calculate the len of the result numbers to fill in leading zeroes if wanted.
-            numHexDigits = (numBits + 3) // 4
-            #resultArray which will be returned
-            result = []
+            # Do checks with numbers and generate as much as the params require
+            # here
+            #TODO: Do tests here
 
-            # Get as many Random Numbers as required
-            for i in range(0, quantity):
-                # Get Random Bits from NoiseSource
-                #TODO: change to method from noise source
-                randomBits = random.getrandbits(numBits)
-                # Convert them into hex number
-                randomHex = hex(int(randomBits))
-                # If necessary remove leading "0x"
-                hexStr = str(randomHex)[2:]
-                # Prepend the necessary number of leading zeroes to the hex string
-                hexStr = hexStr.zfill(numHexDigits)
-                # Append the Hex Number to the array
-                result.append(hexStr)
+            # Stop the generation of random values
+            stopEvent.set()
+
         return result
 
     # Statische Prüfung der Zufallszahlen

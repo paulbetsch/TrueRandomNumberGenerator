@@ -15,9 +15,9 @@ def StartUpTest(binary_String):
 
 def __test_monobit(self, binary_String):
     """
-    Implements the Monobit Test on 20,000 bits sequences of a text file.
+    Implements the Monobit Test on 20,000 bits sequences.
     Input:
-        bits: an array with the bits as integers from the txt input file.
+        bits: an array with the bits as integers.
     Description and Evaluation rule:
         The Monobit Test is passed when the sum of all bits is in the interval [9654;10346]. Otherwise it failed.
     """
@@ -41,9 +41,9 @@ def __test_monobit(self, binary_String):
 
 def __poker_test(binary_array):
     """
-    Implements the Poker Test on 20,000 bits sequences of a text file.
+    Implements the Poker Test on 20,000 bits sequences.
     Input:
-        binary_array: an array with the bits as integers from the txt input file.
+        binary_array: an array with the bits as integers.
     Description and Evaluation rule:
         The Poker Test is passed when T2 is in the interval [1.03;57.4]. Otherwise it failed.
         It checks the occurences of 4-bit patterns.
@@ -78,9 +78,9 @@ def __poker_test(binary_array):
 
 def __boolean_test3(binary_array):
     """
-    Implements the Runs Test on 20,000 bits sequences of a text file.
+    Implements the Runs Test on 20,000 bits sequences.
     Input:
-        binary_array: an array with the bits as integers from the txt input file.
+        binary_array: an array with the bits as integers.
     Description and Evaluation rule:
         The Runs Test is passed when the runs for specific lengths are in a defined interval. Otherwise it failed.
         A run is defined as a consecutive sequence of the same number.
