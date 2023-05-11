@@ -44,7 +44,7 @@ class PendelManager:
 
             # Do checks with numbers and generate as much as the params require
             # here
-            #TODO: Do tests here
+            #TODO: Do tests here (maybe in diffrent processes)
 
             # Stop the generation of random values
             stopEvent.set()
