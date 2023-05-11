@@ -1,7 +1,6 @@
 import RPi.GPIO as GPIO
 from time import sleep    
 import time
-import keyboard
 
 # Diese Methode startet den Elektromotor und lässt ihn für eine bestimmte Zeit (durationRunning) laufen
 # Der Zweite Parameter ist die Pause, zu dem nächsten Aufruf.
