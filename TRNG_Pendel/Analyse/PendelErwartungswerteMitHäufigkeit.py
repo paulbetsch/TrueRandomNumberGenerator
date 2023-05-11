@@ -1,5 +1,5 @@
 import math
-from KordinatenInBildKonvertierer import *
+from KoordinatenInBildKonvertierer import *
 
 # radius: Radius des Kreises auf dem die Punkte berechnet werden sollen
 # mittelpunkt: Mittelpunkt des Kreises als Tupel (X-Koordinate, Y-Koordinate) auf dem die Punkte berechnet werden sollen 
