@@ -167,10 +167,7 @@ def WinkelToHex(WINKEL_LIST):
 
 # Ermittelt vorzeichen einer Zahl
 def Sign(zahl):
-    if zahl < 0:
-        return -1
-    else:
-        return 1
+    return -1 if (zahl < 0) else 1
 
 # Startet Skript, Hauptmethode
 def CapturePendelum():
@@ -183,3 +180,4 @@ def CapturePendelum():
     WinkelToHex(WINKEL_LIST)
 
 CapturePendelum()
+

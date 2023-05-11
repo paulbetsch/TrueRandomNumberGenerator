@@ -45,7 +45,7 @@ def berechnePendelErwartungsraumMitHäufigkeiten(pendelnummer):
                     else:
                         wertebereich[tupel] = wertebereich[tupel] +1
                 neuePunkte = []
-                
+
         print("Berechnung Punkte für Pendel "+str(anzahl+1) + " fertig")
         mittelpunkte = neuePunkte
     return wertebereich
