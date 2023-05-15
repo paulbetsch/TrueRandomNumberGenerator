@@ -38,12 +38,18 @@ DISTANZ_LIST = []
 BIT_STRING = ""
 
 
-def write(bit, file):
+def write(bit, file, returnValue):
     """
     Schreibt bit in file
     """
     with open(file, 'a') as f:
         f.write(bit)
+    
+    if len(BIT_STRING) < 64:
+        BIT_STRING = BIT_STRING + bit
+    else: 
+        returnValue.append(BIT_STRING)
+        BIT_STRING = bit
 
 # Has to be tested -
 def rangeToBitsFaster(coordList, middle, file, pixelRange):
