@@ -61,7 +61,7 @@ def rangeToBitsFaster(coordList, middle, file, pixelRange):
 
     for i in range(int(parts)):
         pixelRangesRight.append(pixelRangesRight[i] + pixelRange)
-        pixelRangesLeft.append(pixelRangesLeft[i] - pixelRange)
+        pixelRangesLeft.append(pixelRangesLeft[i] - pixelRange) 
 
     for x in coordList:
         i = 0
