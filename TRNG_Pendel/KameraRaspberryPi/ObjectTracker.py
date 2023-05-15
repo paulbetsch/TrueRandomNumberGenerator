@@ -8,28 +8,19 @@ from time import sleep
 import keyboard
 import numpy as np
 
-#um Programm zu stoppen "q" in geöffnetem Fenster drücken
-#Video Capture anpassen - 0 = Standard Kamera , 1 = Externe Kamera ...
-
-
+#Video Quelle -> 0 = Standard Kamera , 1 = Externe Kamera
 cap = cv2.VideoCapture(0)
 
-#cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-#cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-#ret, frame = cap.read()
-#height, width, channels = frame.shape
-#RGB reichweite für Punkte
+#RGB Reichweite für die Analyse der Bewegungen des schwarzen Pendels
 LOWER_BLACK = (0, 0, 0)
 UPPER_BLACK = (255, 255, 55)
 
-#Mittelpunkt für Polar Koordinaten System
+#Minimale Fläche bei der schwarze Pixel als schwarzer Punkte des Pendels erkannt werden
+MIN_AREA = 20
 
+#Mittelpunkt für Polar Koordinaten System
 X_MIDDLE = 323  
 Y_MIDDLE = 235
-
-#Minimum Fläche für Punkt
-
-MIN_AREA = 20
 
 #Daten
 TIMESTAMPS = []
@@ -39,16 +30,13 @@ WINKEL_LIST = []
 DISTANZ_LIST = []
 
 
-
+# Schreibt ein Bit in die übergebene File
 def write(bit, file):
-    """
-    Schreibt bit in file
-    """
     with open(file, 'a') as f:
         f.write(bit)
 
-
-def rangeToBits(coordList, middle, file, pixelRange):
+# 
+def rangeToBits(coordList, middle, file, pixelRange=2):
     """
     coordList - Liste mit X oder Y Koordinaten
     middle - Mittelpunkt X oder Y (Pendelmitte)
@@ -91,7 +79,7 @@ def Coords(xcoordList, ycoordList, distanzList, winkelList, timestamps, file):
     """
 
     print("write Coords to " + file + " count " + str(len(timestamps)) + ", "  +str(len(xcoordList)) + ", " + str(len(ycoordList)) + ", " + str(len(distanzList)) + ", " + str(len(winkelList)))
-     # Überschreibt alte CSV Datei und schreibt Kopfzeile
+    # Überschreibt alte CSV Datei und schreibt Kopfzeile
     with open(file, 'w') as f:
         f.write("timestamp, x, y, abstand, winkel" + "\n")
 
@@ -188,8 +176,8 @@ def GenerateData():
     """
 
     Coords(XCOORD_LIST, YCOORD_LIST, DISTANZ_LIST, WINKEL_LIST, TIMESTAMPS, "TRNG_Pendel\\KameraRaspberryPi\\output.csv")
-    rangeToBits(XCOORD_LIST, X_MIDDLE, "TRNG_Pendel\\KameraRaspberryPi\\bits.txt", 2)
-    rangeToBits(YCOORD_LIST, Y_MIDDLE, "TRNG_Pendel\\KameraRaspberryPi\\bits.txt", 2)
+    rangeToBits(XCOORD_LIST, X_MIDDLE, "TRNG_Pendel\\KameraRaspberryPi\\bits.txt")
+    rangeToBits(YCOORD_LIST, Y_MIDDLE, "TRNG_Pendel\\KameraRaspberryPi\\bits.txt")
 
 
 def Sign(zahl):
