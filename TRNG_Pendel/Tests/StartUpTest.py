@@ -3,6 +3,17 @@ from math import sqrt as sqrt
 from scipy import stats
 from scipy.special import erfc as erfc
 
+"""
+    Example Run Implementation of function StartUpTest():
+    if(__name__ == '__main__'):
+        bits = random.getrandbits(128)
+        bitString = str(bin(bits)[2:])
+        print('0:' + str(bitString.count('0')) +  ', 1:' + str(bitString.count('1')))
+        print(StartUpTest.StartUpTest(bin(bits)[2:]))
+    else:
+        pass
+"""
+
 def StartUpTest(binaryArray):
     """
     Implements two statistical Test to ensure the provided Bit Array has a good randomness.
