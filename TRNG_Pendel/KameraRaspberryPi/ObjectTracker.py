@@ -193,15 +193,7 @@ def GenerateData():
 
 
 def Sign(zahl):
-    """
-    Ermittelt vorzeichen einer Zahl
-    """
-
-    if zahl < 0:
-        return -1
-    else:
-        return 1
-
+    return -1 if (zahl < 0) else 1
 
 def ClearTestSetup():
     """
@@ -252,8 +244,6 @@ def splitIntoQty(inputFile, qty, bits, returnValue):
         
         return returnValue
         
-
-
 def CheckMiddlePoint(x0, y0):
     """
     überprüft ob der Mittelpunkt des Pendels falsch gesetzt ist  
