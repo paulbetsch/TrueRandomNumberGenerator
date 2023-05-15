@@ -35,8 +35,9 @@ class PendelManager:
             # Shared Memory for Random Bits
             randomValues = m.list()
             stopEvent = Event()
+            errorEvent = Event()
 
-            videoProc = Process(target=ObjectTracker.CapturePendelum, args=(stopEvent, randomValues))
+            videoProc = Process(target=ObjectTracker.CapturePendelum, args=(stopEvent, errorEvent, randomValues))
             procs.append(videoProc)
 
             # Start the generation of random values
@@ -44,10 +45,14 @@ class PendelManager:
 
             # Do checks with numbers and generate as much as the params require
             # here
-            #TODO: Do tests here (maybe in diffrent processes)
-
+            while not errorEvent.is_set():
+                #TODO: Do tests here (maybe in diffrent processes)
+                pass
+            
             # Stop the generation of random values
             stopEvent.set()
+            # End Process
+            videoProc.terminate()
 
         return result
 
