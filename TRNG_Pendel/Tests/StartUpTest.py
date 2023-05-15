@@ -41,10 +41,10 @@ def __test_monobit(binaryArray):
     # Compute the test statistic
     sObs = count / sqrt(arrayLength)
 
-    # Compute p-Value
+    # Compute pValue
     pValue = erfc(fabs(sObs) / sqrt(2))
 
-    # return a p_value
+    # return true if the pValue is bigger than 0.01
     return pValue >= 0.01
 
 
@@ -76,4 +76,4 @@ def __chi2_gof_test(binaryArray):
     print(f"Test statistic: {testStat:.2f}")
     print(f"P-value: {pValue:.4f}")
     # According to the BSI Standard PTG2 the test variable of the X2-Test must be less than 65.0 # TODO: Figure out which variable should be tested
-    return testStat < 0.65
+    return pValue >= 0.01
