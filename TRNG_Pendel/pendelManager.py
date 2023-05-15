@@ -1,9 +1,7 @@
 import time
 import random
 from multiprocessing import Process, Manager, Event
-from Lightbarrier import lightbarrier, startUpTestLightbarrier
 from KameraRaspberryPi import ObjectTracker
-from Engine import motor
 from Tests import TotalFailureTest
 
 # Wird von der REST-API geleitet
@@ -16,15 +14,10 @@ class PendelManager:
         self.manager = Manager()
         pass
 
-    def __runEngine(self, stopEvent):
-        while(not stopEvent.is_set()):
-            motor.StartEngine(2,7)
-        motor.StopEngine()
-
     # Wird später aufgerufen um die Funktionalität der Lichtschranke, der Kamera und der Motorisierung des Pendels zu gewährleisten.
     def checkFunctionality(returnValue):
         checkSuccessful = False
-        #lightbarrier.functionalityTest()
+        #camera.functionalityTest()
         #enginecontrol.startuptest()
         #camera.startuptest()
         #if(ligtbarrier and enginecontrol and camera):
@@ -37,36 +30,18 @@ class PendelManager:
         # TODO hier sollten die anderen Processe gestartet werden
         with self.manager as m:
             procs = []
-            engineArgs = []
-            stopEvent = Event()
-            engineArgs.append(stopEvent)
-            # TODO Wir müssen öffentliche run methoden für die einzelnen Scripte nutzen
-            engineProc = Process(target=self.__runEngine, args=engineArgs)
-            procs.append(engineProc)
+            randomValues = m.list()
 
-            videoProc = Process(target=ObjectTracker.__main__(), args=resultValue)
+            amountOfBits = numBits * quantity
+            videoProc = Process(target=ObjectTracker.CapturePendelum, args=(numBits, randomValues))
             procs.append(videoProc)
 
-            #ligtProc = Process(target=lightbarrier.__main__(), args=resultValue)
-            #procs.append(ligtProc)
-
-            engineProc.start()
-            # Check if this works
-            time.sleep(18)
-
-            #Set to false an terminate process if the quantity is reached
-            stopEvent.set()
-            time.sleep(1)
-            engineProc.terminate()
             # TODO: Kontrolle der Prozesse; Erst Zahlen generieren und dann den Test
-            
+            videoProc.start()
+
             # Aufbereitung der Daten für die API
             # counter for len of result array
             i = 0
-            # len of result array given by parameter
-            quantity = 10# = request.args.get('quantity', default=1, type=int)
-            #len of the random Bits
-            numBits = 10# = request.args.get('numBits', default=1, type=int)
             # calculate the len of the result numbers to fill in leading zeroes if wanted.
             numHexDigits = (numBits + 3) // 4
             #resultArray which will be returned
@@ -79,7 +54,7 @@ class PendelManager:
                 randomBits = random.getrandbits(numBits)
                 # Convert them into hex number
                 randomHex = hex(int(randomBits))
-                # If necesarry remove leading "0x"
+                # If necessary remove leading "0x"
                 hexStr = str(randomHex)[2:]
                 # Prepend the necessary number of leading zeroes to the hex string
                 hexStr = hexStr.zfill(numHexDigits)
@@ -88,7 +63,7 @@ class PendelManager:
         return result
 
     # Statische Prüfung der Zufallszahlen
-    def checkBSITests(binaryData, ):
+    def checkBSITests(binaryData):
         TotalFailureTest.TotalFailureTest(binaryData, False, 8)
 
 # Returns the only instance of the PendelManger class
@@ -98,6 +73,7 @@ def GetInstance():
 # Wir können feststellen ob der Manager direkt gestartet wird
 if __name__ == '__main__':
     print("Executed when called directly")
+    # Eventuell können wir hier eine Menüführung über CLI implementieren
     __CONTROLLED_BY_API = False
     __manager = PendelManager(__CONTROLLED_BY_API)
 
