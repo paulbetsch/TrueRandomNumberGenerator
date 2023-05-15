@@ -19,5 +19,5 @@ def generatePictureOutOfDictionary(dic):
         
             
         
-    img.save('TRNG_Pendel/PendelAnalyse/Erwartungsraum.png')
+    img.save('TRNG_Pendel/Analyse/Erwartungsraum.png')
     print("Bild gespeichert")

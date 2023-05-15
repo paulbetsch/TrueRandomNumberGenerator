@@ -33,7 +33,7 @@ def berechnePendelErwartungsraumMitHäufigkeiten(pendelnummer):
         anzahlMittelpunkte = len(mittelpunkte)
         progessCounter = 0
         for punkt in mittelpunkte:
-            if(progessCounter % 1000 == 0):
+            if(progessCounter % 2500 == 0):
                 print(str(round((progessCounter / anzahlMittelpunkte * 100),2)) + "%")
 
             progessCounter += 1
