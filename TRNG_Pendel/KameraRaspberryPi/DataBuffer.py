@@ -103,3 +103,4 @@ class Buffer:
         # Check if bitString is longer than 0b0
         if len(bitString) > 3:
             self.FillBuffer(bitString)
+ 
