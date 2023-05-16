@@ -2,11 +2,14 @@ import cv2
 import math
 import struct
 import time
-from Engine import motor
-# RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 from time import sleep    
 import keyboard
+import cv2
 import numpy as np
+from threading import Thread
+from multiprocessing import Process
+from Engine import motor
 
 #Video Quelle -> 0 = Standard Kamera , 1 = Externe Kamera
 cap = cv2.VideoCapture(0)
@@ -18,9 +21,8 @@ UPPER_BLACK = (255, 255, 55)
 #Minimale Fläche bei der schwarze Pixel als schwarzer Punkte des Pendels erkannt werden
 MIN_AREA = 20
 
-#Mittelpunkt für Polar Koordinaten System
-X_MIDDLE = 323  
-Y_MIDDLE = 235
+X_MIDDLE = 324  
+Y_MIDDLE = 234
 
 #Daten
 TIMESTAMPS = []
@@ -28,24 +30,71 @@ XCOORD_LIST = []
 YCOORD_LIST = []
 WINKEL_LIST = []
 DISTANZ_LIST = []
+BIT_STRING = ""
 
-
-# Schreibt ein Bit in die übergebene File
-def write(bit, file):
+# Schreibt ein Strings an Bits in die übergebene File sowie in die globale Variable BIT_STRING
+# Wenn 64 Bit generiert wurden, werden diese per Interprozess Kommunikation an das Skript
+# Pendelmanager übergeben
+def write(randomBit, file, returnValue):
+    global BIT_STRING
     with open(file, 'a') as f:
-        f.write(bit)
+        f.write(randomBit)
+    
+    if len(BIT_STRING) < 64:
+        BIT_STRING = BIT_STRING + randomBit
+    else: 
+        returnValue.append(BIT_STRING)
+        BIT_STRING = randomBit
 
-# 
-def rangeToBits(coordList, middle, file, pixelRange=2):
+# Has to be tested -
+def rangeToBitsFaster(coordList, middle, file, pixelRange):
     """
     coordList - Liste mit X oder Y Koordinaten
     middle - Mittelpunkt X oder Y (Pendelmitte)
     file - In welche File die Daten zu schreiben sind
     """
-    parts = 240 / pixelRange
+    parts = 2400 / pixelRange
+    pixelRange = pixelRange / 10
+    pixelRangesRight, pixelRangesLeft = [middle], [middle] 
+    len_right, len_left = len(pixelRangesRight), len(pixelRangesLeft)
+
+    for i in range(int(parts)):
+        pixelRangesRight.append(pixelRangesRight[i] + pixelRange)
+        pixelRangesLeft.append(pixelRangesLeft[i] - pixelRange) 
+
+    for x in coordList:
+        i = 0
+        found = False
+        if x < middle:
+            while not found and i < len_left - 1:
+                if x <= pixelRangesLeft[i] and x > pixelRangesLeft[i + 1]:
+                    found = True
+                    write("0", file)
+                i += 2
+            if not found:
+                write("1", file)
+        else:
+            while not found and i < len_right - 1:
+                if x > pixelRangesRight[i] and x <= pixelRangesRight[i + 1]:
+                    found = True
+                    write("1", file)
+                i += 2
+            if not found:
+                write("0", file)
+
+def rangeToBits(coordList, middle, file, pixelRange, returnValue):
+    """
+    coordList - Liste mit X oder Y Koordinaten
+    middle - Mittelpunkt X oder Y (Pendelmitte)
+    file - In welche File die Daten zu schreiben sind
+    """
+    parts = 2400 / pixelRange
+    pixelRange = pixelRange / 10
     pixelRangesRight = [middle]
     pixelRangesLeft = [middle]
-    for i in range (150):
+    print(str(pixelRange))
+    print(str(parts))
+    for i in range (int(parts)):
         pixelRangesRight.append(pixelRangesRight[i] + pixelRange)
         pixelRangesLeft.append(pixelRangesLeft[i] - pixelRange)
 
@@ -57,19 +106,19 @@ def rangeToBits(coordList, middle, file, pixelRange=2):
                 if x <= pixelRangesLeft[i] and x > pixelRangesLeft[i+1]:
                     #print(str(pixelRangesLeft[i]) +  " > " + str(x)  + " > " + str(pixelRangesLeft[i+1]))
                     found = True
-                    write("0", file)
+                    write("0", file, returnValue)
                 i += 2
             if found == False:
-                write("1", file)
+                write("1", file, returnValue)
         else:
             while found == False and i < len(pixelRangesRight) - 1:
                 if x > pixelRangesRight[i] and x <= pixelRangesRight[i+1]:
                     #print(str(pixelRangesRight[i]) +  " < " + str(x)  + " < " + str(pixelRangesRight[i+1]))
                     found = True
-                    write("1", file)
+                    write("1", file, returnValue)
                 i += 2
             if found == False:
-                write("0", file)
+                write("0", file, returnValue)
 
 def Coords(xcoordList, ycoordList, distanzList, winkelList, timestamps, file):
     """
@@ -77,36 +126,51 @@ def Coords(xcoordList, ycoordList, distanzList, winkelList, timestamps, file):
     Erste Zeile Kopfzeile: timestamp, x Koordinate, y Koordinate, abstand, winkel
     Jede Zeile entspricht 1 Punkt - timestamp, x Koordinate, y Koordinate, abstand, winkel
     """
-
-    print("write Coords to " + file + " count " + str(len(timestamps)) + ", "  +str(len(xcoordList)) + ", " + str(len(ycoordList)) + ", " + str(len(distanzList)) + ", " + str(len(winkelList)))
-    # Überschreibt alte CSV Datei und schreibt Kopfzeile
-    with open(file, 'w') as f:
-        f.write("timestamp, x, y, abstand, winkel" + "\n")
-
-    # Schreibt Daten in CSV
     n = 0
     for x in timestamps:
         with open(file, 'a') as f:
             #print(str(x) + ", " + str(xcoord_list[n]) + ", " + str(ycoord_list[n]) + ", " + str(distanz_list[n]) + ", " + str(winkel_list[n]) + "\n")
             f.write(str(x) + ", " + str(xcoordList[n]) + ", " + str(ycoordList[n]) + ", " + str(distanzList[n]) + ", " + str(winkelList[n]) + "\n")
         n += 1
+        
+def CheckIfMoving(x):
+    """
+    Checks if the Pendelum has enough movement
+    """
+    if len(x) > 1:
+        for i in range (len(x) - 2):
+            if int(x[i]) == int(x[i + 1]) == int(x[i + 2]):
+                return False
+        return True
+        
+    return False
 
 
-def Capture(numbits):
+def Capture(stopEvent, errorEvent, returnValue):
     """
     Tracked Konturen aus einem Live Stream, schreibt Koordinaten x, y und abstand, winkel (polares Koordinaten System)
     Solange bis "q" im geöffneten Fenster gedrückt wird oder die Gewünschte anzahl an Bits (numbits) erreicht wurde 
     """
+    cap = cv2.VideoCapture(-1, cv2.CAP_V4L)
     timestamp = time.time()
-    motor.StartEngine(3, 0, True)
-    #time.sleep(0.5)
+    motor.StartEngine(3, 0)
     print(" ")
     print("Start Camera")
-    while True:            
-        if time.time() - timestamp > 10:
-            motor.StartEngine(2, 0, True)
+    while not stopEvent.is_set():
+        if time.time() - timestamp > 8:
+            GenerateData(returnValue)
+            t = Process(target=motor.StartEngine, args=(2, 0))
+            t.start()
             timestamp = time.time()
-            time.sleep(0.5)
+            if CheckIfMoving(XCOORD_LIST):
+                print("Pendelum is moving")
+            else:
+                print("Pendelum not moving")
+                cap.release()
+                cv2.destroyAllWindows()
+                errorEvent.set()
+                break 
+
         ret, frame = cap.read()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, LOWER_BLACK, UPPER_BLACK)
@@ -137,15 +201,12 @@ def Capture(numbits):
                     winkel = math.acos(dx/distanz) * Sign(dy) # Winkel berechnung in Bogenmaß
                     
                     if distanz < 220:
-                        print("Bits: " + str(len(XCOORD_LIST) * 2))
                         XCOORD_LIST.append(float(x))
                         YCOORD_LIST.append(float(y))
                         DISTANZ_LIST.append(distanz)
                         WINKEL_LIST.append(winkel)
                         TIMESTAMPS.append(time.time())
 
-                    # Abfrage geschwindigkeit anpassen
-                    #time.sleep(0.01)
                 cv2.imshow("Frame", frame)
 
         #Pausierung des programms 
@@ -157,12 +218,7 @@ def Capture(numbits):
                     break       
                 
         if cv2.waitKey(1) & 0xFF == ord('q'):
-            GenerateData()
-            break
-        
-        # Sobald gewünschte Anzahl an Bits erreicht ist, Daten 
-        elif len(XCOORD_LIST) * 2 > numbits:
-            GenerateData()
+            GenerateData(returnValue)
             break
 
     cap.release()
@@ -170,42 +226,48 @@ def Capture(numbits):
 
 
 
-def GenerateData():
+def GenerateData(returnValue):
     """
     Führt erschwünschte Endmethoden zur Digitalisierung aus 
     """
+    global XCOORD_LIST
+    global YCOORD_LIST
+    global WINKEL_LIST
+    global DISTANZ_LIST
+    
+    #Coords(XCOORD_LIST, YCOORD_LIST, DISTANZ_LIST, WINKEL_LIST, TIMESTAMPS, "output.csv")
+    rangeToBits(XCOORD_LIST, X_MIDDLE, "bits.txt", 1, returnValue)
+    LsbFloat(WINKEL_LIST, "bits.txt", returnValue)
+    rangeToBits(YCOORD_LIST, Y_MIDDLE, "bits.txt", 1, returnValue)
 
-    Coords(XCOORD_LIST, YCOORD_LIST, DISTANZ_LIST, WINKEL_LIST, TIMESTAMPS, "TRNG_Pendel\\KameraRaspberryPi\\output.csv")
-    rangeToBits(XCOORD_LIST, X_MIDDLE, "TRNG_Pendel\\KameraRaspberryPi\\bits.txt")
-    rangeToBits(YCOORD_LIST, Y_MIDDLE, "TRNG_Pendel\\KameraRaspberryPi\\bits.txt")
+    XCOORD_LIST = []
+    YCOORD_LIST = []
+    WINKEL_LIST = []
+    DISTANZ_LIST = []
+
 
 
 def Sign(zahl):
-    return -1 if (zahl < 0) else 1
+    """
+    Ermittelt vorzeichen einer Zahl
+    """
+    if zahl < 0:
+        return -1
+    else:
+        return 1
+
 
 def ClearTestSetup():
     """
     Löscht Inhalt der jeweiligen Files 
     """
-
-    with open('TRNG_Pendel\\KameraRaspberryPi\\output.csv', 'w') as f:
+    with open('output.csv', 'w') as f:
         f.write("")
 
-    with open('TRNG_Pendel\\KameraRaspberryPi\\bits.txt', 'w') as f:
-        f.write("")
-
-    with open('TRNG_Pendel\\KameraRaspberryPi\\Rangebits02.txt', 'w') as f:
+    with open('bits.txt', 'w') as f:
         f.write("")
     
-    with open('TRNG_Pendel\\KameraRaspberryPi\\Range05.txt', 'w') as f:
-        f.write("")
     
-    with open('TRNG_Pendel\\KameraRaspberryPi\\Range1bits.txt', 'w') as f:
-        f.write("")
-    
-    with open('TRNG_Pendel\\KameraRaspberryPi\\Range2bits.txt', 'w') as f:
-        f.write("")
-
 
 def splitIntoQty(inputFile, qty, bits, returnValue):
     """
@@ -232,21 +294,33 @@ def splitIntoQty(inputFile, qty, bits, returnValue):
         
         return returnValue
         
+
+
 def CheckMiddlePoint(x0, y0):
     """
     überprüft ob der Mittelpunkt des Pendels falsch gesetzt ist  
     """
     
+def LsbFloat(liste1, file, returnValue):
+    """
+    Schreibt LSB einer Float (aus Liste1) in file 
+    """
+    with open(file, 'w') as f:
+        f.write("")
+    for i in liste1:
+        binary_str = ''.join(format(c, '08b') for c in struct.pack('!f', i))
+        if len(binary_str) > 8:
+            lsb = binary_str[-1]
+            write(lsb, file, returnValue)
 
-
-def CapturePendelum(bits, qty, returnValue):
+def CapturePendelum(stopEvent, errorEvent ,returnValue):
     """
     Hauptmethode
     Startet Pendel 
-    Teilt dannach Bits in geteilte qty und schreibt in returnValue
     """
     CheckMiddlePoint(X_MIDDLE, Y_MIDDLE)
     ClearTestSetup()
-    Capture(bits * qty)
-    returnValue = splitIntoQty("TRNG_Pendel\\KameraRaspberryPi\\bits.txt", qty, bits, returnValue)
+    Capture(stopEvent,errorEvent ,returnValue)
+    
 
+    
