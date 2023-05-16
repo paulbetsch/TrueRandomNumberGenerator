@@ -1,0 +1,15 @@
+[Unit]
+Description=My API Service
+After=nulti-user.target
+Requieres=network.target
+
+[Service]
+Type=idle
+User=paul
+ExecStart=/bin/python /home/paul/Downloads/TrueRandomNumberGenerator-paul/TrueRandomNumberGenerator-paul/TRNG_API/__init__.py
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
