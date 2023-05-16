@@ -2,7 +2,7 @@ import time
 import random
 from multiprocessing import Process, Manager, Event
 from KameraRaspberryPi import ObjectTracker
-from Tests import TotalFailureTest
+#from Tests import TotalFailureTest
 
 # Wird von der REST-API geleitet
 __CONTROLLED_BY_API = False
@@ -70,6 +70,9 @@ if __name__ == '__main__':
     # Eventuell können wir hier eine Menüführung über CLI implementieren
     __CONTROLLED_BY_API = False
     __manager = PendelManager(__CONTROLLED_BY_API)
+    
+    # For Testing:
+    __manager.generateRandomBits(10, 100)
 
 # oder ob er von der API aus aufgerufen wird.            
 else:

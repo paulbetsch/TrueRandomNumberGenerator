@@ -5,15 +5,15 @@ import time
 import RPi.GPIO as GPIO
 from time import sleep    
 import keyboard
+import cv2
 import numpy as np
 from threading import Thread
 from multiprocessing import Process
-from motor import StartEngine
+from Engine import motor
 
 #um Programm zu stoppen "q" in geöffnetem Fenster drücken
 #Video Capture anpassen - 0 = Standard Kamera , 1 = Externe Kamera ...
 
-cap = cv2.VideoCapture(0)
 
 #height, width, channels = frame.shape
 #RGB reichweite für Punkte
@@ -42,6 +42,7 @@ def write(bit, file, returnValue):
     """
     Schreibt bit in file
     """
+    global BIT_STRING
     with open(file, 'a') as f:
         f.write(bit)
     
@@ -158,26 +159,25 @@ def Capture(stopEvent, errorEvent, returnValue):
     Tracked Konturen aus einem Live Stream, schreibt Koordinaten x, y und abstand, winkel (polares Koordinaten System)
     Solange bis "q" im geöffneten Fenster gedrückt wird oder die Gewünschte anzahl an Bits (numbits) erreicht wurde 
     """
+    cap = cv2.VideoCapture(-1, cv2.CAP_V4L)
     timestamp = time.time()
-    StartEngine(3, 0, True)
+    motor.StartEngine(3, 0)
     print(" ")
     print("Start Camera")
-    firstCheck = False
     while not stopEvent.is_set():
-        if time.time() - timestamp > 8 and firstCheck == False:
+        if time.time() - timestamp > 8:
+            GenerateData(returnValue)
+            t = Process(target=motor.StartEngine, args=(2, 0))
+            t.start()
+            timestamp = time.time()
             if CheckIfMoving(XCOORD_LIST):
                 print("Pendelum is moving")
             else:
                 print("Pendelum not moving")
+                cap.release()
+                cv2.destroyAllWindows()
                 errorEvent.set()
-                break           
-            firstCheck = True
-        if time.time() - timestamp > 8:
-            GenerateData()
-            print("Bits: " + str(len(XCOORD_LIST) * 3))
-            t = Process(target=StartEngine, args=(2, 0, True))
-            t.start()
-            timestamp = time.time()
+                break 
 
         ret, frame = cap.read()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -238,6 +238,11 @@ def GenerateData(returnValue):
     """
     Führt erschwünschte Endmethoden zur Digitalisierung aus 
     """
+    global XCOORD_LIST
+    global YCOORD_LIST
+    global WINKEL_LIST
+    global DISTANZ_LIST
+    
     #Coords(XCOORD_LIST, YCOORD_LIST, DISTANZ_LIST, WINKEL_LIST, TIMESTAMPS, "output.csv")
     rangeToBits(XCOORD_LIST, X_MIDDLE, "bits.txt", 1, returnValue)
     LsbFloat(WINKEL_LIST, "bits.txt", returnValue)
@@ -304,7 +309,7 @@ def CheckMiddlePoint(x0, y0):
     überprüft ob der Mittelpunkt des Pendels falsch gesetzt ist  
     """
     
-def LsbFloat(liste1, file):
+def LsbFloat(liste1, file, returnValue):
     """
     Schreibt LSB einer Float (aus Liste1) in file 
     """
@@ -314,14 +319,12 @@ def LsbFloat(liste1, file):
         binary_str = ''.join(format(c, '08b') for c in struct.pack('!f', i))
         if len(binary_str) > 8:
             lsb = binary_str[-1]
-            with open(file, 'a') as f:
-                f.write(lsb)
+            write(lsb, file, returnValue)
 
-def CapturePendelum(stopEvent,errorEvent ,returnValue):
+def CapturePendelum(stopEvent, errorEvent ,returnValue):
     """
     Hauptmethode
     Startet Pendel 
-    Teilt dannach Bits in geteilte qty und schreibt in returnValue
     """
     CheckMiddlePoint(X_MIDDLE, Y_MIDDLE)
     ClearTestSetup()
