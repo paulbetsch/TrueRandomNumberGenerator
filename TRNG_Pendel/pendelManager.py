@@ -2,7 +2,7 @@ import time
 import random
 from multiprocessing import Process, Manager, Event
 from KameraRaspberryPi import ObjectTracker
-from Tests import TotalFailureTest
+import Tests.TotalFailureTest as tf
 
 # Wird von der REST-API geleitet
 __CONTROLLED_BY_API = False
@@ -15,7 +15,7 @@ class PendelManager:
         pass
 
     # Wird später aufgerufen um die Funktionalität der Lichtschranke, der Kamera und der Motorisierung des Pendels zu gewährleisten.
-    def checkFunctionality(returnValue):
+    def checkFunctionality(self, returnValue):
         checkSuccessful = False
         #camera.functionalityTest()
         #enginecontrol.startuptest()
@@ -27,44 +27,38 @@ class PendelManager:
     # Hier soll der Motor gesteuert werden, und die Werte der Kamera und der Lichtschranke ausgewertet werden
     # Aktuell zu Testzwecken werden hier nur pseudozufallszahlen generiert
     def generateRandomBits(self, quantity, numBits):
-        # TODO hier sollten die anderen Processe gestartet werden
+        #resultArray which will be returned
+        result = []
         with self.manager as m:
+            #Process storage
             procs = []
+            # Shared Memory for Random Bits
             randomValues = m.list()
+            stopEvent = Event()
+            errorEvent = Event()
 
-            amountOfBits = numBits * quantity
-            videoProc = Process(target=ObjectTracker.CapturePendelum, args=(numBits, randomValues))
+            videoProc = Process(target=ObjectTracker.CapturePendelum, args=(stopEvent, errorEvent, randomValues))
             procs.append(videoProc)
 
-            # TODO: Kontrolle der Prozesse; Erst Zahlen generieren und dann den Test
+            # Start the generation of random values
             videoProc.start()
 
-            # Aufbereitung der Daten für die API
-            # counter for len of result array
-            i = 0
-            # calculate the len of the result numbers to fill in leading zeroes if wanted.
-            numHexDigits = (numBits + 3) // 4
-            #resultArray which will be returned
-            result = []
+            # Do checks with numbers and generate as much as the params require
+            # here
+            while not errorEvent.is_set():
+                #TODO: Do tests here (maybe in diffrent processes)
+                pass
+            
+            # Stop the generation of random values
+            stopEvent.set()
+            # End Process
+            videoProc.terminate()
 
-            # Get as many Random Numbers as required
-            for i in range(0, quantity):
-                # Get Random Bits from NoiseSource
-                #TODO: change to method from noise source
-                randomBits = random.getrandbits(numBits)
-                # Convert them into hex number
-                randomHex = hex(int(randomBits))
-                # If necessary remove leading "0x"
-                hexStr = str(randomHex)[2:]
-                # Prepend the necessary number of leading zeroes to the hex string
-                hexStr = hexStr.zfill(numHexDigits)
-                # Append the Hex Number to the array
-                result.append(hexStr)
         return result
 
     # Statische Prüfung der Zufallszahlen
-    def checkBSITests(binaryData):
-        TotalFailureTest.TotalFailureTest(binaryData, False, 8)
+    def checkBSITests(self, binaryData):
+        tf.TotalFailureTest(str(binaryData), False, 8)
 
 # Returns the only instance of the PendelManger class
 def GetInstance():
@@ -76,6 +70,9 @@ if __name__ == '__main__':
     # Eventuell können wir hier eine Menüführung über CLI implementieren
     __CONTROLLED_BY_API = False
     __manager = PendelManager(__CONTROLLED_BY_API)
+    
+    # For Testing:
+    __manager.generateRandomBits(10, 100)
 
 # oder ob er von der API aus aufgerufen wird.            
 else:

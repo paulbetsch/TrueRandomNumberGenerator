@@ -5,17 +5,16 @@ import time
 import RPi.GPIO as GPIO
 from time import sleep    
 import keyboard
+import cv2
 import numpy as np
+from threading import Thread
+from multiprocessing import Process
+from Engine import motor
 
 #um Programm zu stoppen "q" in geöffnetem Fenster drücken
 #Video Capture anpassen - 0 = Standard Kamera , 1 = Externe Kamera ...
 
 
-cap = cv2.VideoCapture(0)
-
-#cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-#cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-#ret, frame = cap.read()
 #height, width, channels = frame.shape
 #RGB reichweite für Punkte
 LOWER_BLACK = (0, 0, 0)
@@ -23,115 +22,163 @@ UPPER_BLACK = (255, 255, 55)
 
 #Mittelpunkt für Polar Koordinaten System
 
-X_MIDDLE = 323
-Y_MIDDLE = 235
+X_MIDDLE = 324  
+Y_MIDDLE = 234
 
 #Minimum Fläche für Punkt
 
 MIN_AREA = 20
 
 #Daten
-BINARY_STRING = ""
-LOWER_TIMESTAMPS = []
-UPPER_TIMESTAMPS = []
-
 TIMESTAMPS = []
 XCOORD_LIST = []
 YCOORD_LIST = []
 WINKEL_LIST = []
 DISTANZ_LIST = []
+BIT_STRING = ""
 
-LOWER_YCOORD_LIST = []
-UPPER_YCOORD_LIST = []
-LOWER_XCOORD_LIST = []
-UPPER_XCOORD_LIST = []
 
-UPPER_DISTANZ_LIST = []
-LOWER_DISTANZ_LIST = []
-
-LOWER_WINKEL_LIST = []
-UPPER_WINKEL_LIST = []
-
-LOWER_WINKEL_HEX = []
-UPPER_WINKEL_HEX = []
-#Schreibt alle Daten in CSV Datei mit: timestamp, x, y, abstand, winkel
-
-def write(bit, file):
+def write(bit, file, returnValue):
+    """
+    Schreibt bit in file
+    """
+    global BIT_STRING
     with open(file, 'a') as f:
         f.write(bit)
+    
+    if len(BIT_STRING) < 64:
+        BIT_STRING = BIT_STRING + bit
+    else: 
+        returnValue.append(BIT_STRING)
+        BIT_STRING = bit
 
-def rangeToBits(XList, x0, file):
-    with open(file, 'w') as f:
-        f.write("")
-    pixelRange = 2
-    pixelRangesRight = [x0]
-    pixelRangesLeft = [x0]
-    for i in range (150):
+# Has to be tested -
+def rangeToBitsFaster(coordList, middle, file, pixelRange):
+    """
+    coordList - Liste mit X oder Y Koordinaten
+    middle - Mittelpunkt X oder Y (Pendelmitte)
+    file - In welche File die Daten zu schreiben sind
+    """
+    parts = 2400 / pixelRange
+    pixelRange = pixelRange / 10
+    pixelRangesRight = [middle]
+    pixelRangesLeft = [middle]
+    len_left = len(pixelRangesLeft)
+    len_right = len(pixelRangesRight)
+
+    for i in range(int(parts)):
+        pixelRangesRight.append(pixelRangesRight[i] + pixelRange)
+        pixelRangesLeft.append(pixelRangesLeft[i] - pixelRange) 
+
+    for x in coordList:
+        i = 0
+        found = False
+        if x < middle:
+            while not found and i < len_left - 1:
+                if x <= pixelRangesLeft[i] and x > pixelRangesLeft[i + 1]:
+                    found = True
+                    write("0", file)
+                i += 2
+            if not found:
+                write("1", file)
+        else:
+            while not found and i < len_right - 1:
+                if x > pixelRangesRight[i] and x <= pixelRangesRight[i + 1]:
+                    found = True
+                    write("1", file)
+                i += 2
+            if not found:
+                write("0", file)
+
+def rangeToBits(coordList, middle, file, pixelRange, returnValue):
+    """
+    coordList - Liste mit X oder Y Koordinaten
+    middle - Mittelpunkt X oder Y (Pendelmitte)
+    file - In welche File die Daten zu schreiben sind
+    """
+    parts = 2400 / pixelRange
+    pixelRange = pixelRange / 10
+    pixelRangesRight = [middle]
+    pixelRangesLeft = [middle]
+    print(str(pixelRange))
+    print(str(parts))
+    for i in range (int(parts)):
         pixelRangesRight.append(pixelRangesRight[i] + pixelRange)
         pixelRangesLeft.append(pixelRangesLeft[i] - pixelRange)
 
-    for x in XList:
+    for x in coordList:
         i = 0
         found = False
-        if x < x0:
+        if x < middle:
             while found == False and i < len(pixelRangesLeft) - 1:
                 if x <= pixelRangesLeft[i] and x > pixelRangesLeft[i+1]:
                     #print(str(pixelRangesLeft[i]) +  " > " + str(x)  + " > " + str(pixelRangesLeft[i+1]))
                     found = True
-                    write("0", file)
+                    write("0", file, returnValue)
                 i += 2
             if found == False:
-                write("1", file)
+                write("1", file, returnValue)
         else:
             while found == False and i < len(pixelRangesRight) - 1:
                 if x > pixelRangesRight[i] and x <= pixelRangesRight[i+1]:
                     #print(str(pixelRangesRight[i]) +  " < " + str(x)  + " < " + str(pixelRangesRight[i+1]))
                     found = True
-                    write("1", file)
+                    write("1", file, returnValue)
                 i += 2
             if found == False:
-                write("0", file)
+                write("0", file, returnValue)
 
 def Coords(xcoordList, ycoordList, distanzList, winkelList, timestamps, file):
-    print("write Coords to " + file + " count " + str(len(timestamps)) + ", "  +str(len(xcoordList)) + ", " + str(len(ycoordList)) + ", " + str(len(distanzList)) + ", " + str(len(winkelList)))
-     # Überschreibt alte CSV Datei und schreibt Kopfzeile
-    with open(file, 'w') as f:
-        f.write("timestamp, x, y, abstand, winkel" + "\n")
-
-    # Schreibt Daten in CSV
+    """
+    Schreibt Parameter in Datei (file)
+    Erste Zeile Kopfzeile: timestamp, x Koordinate, y Koordinate, abstand, winkel
+    Jede Zeile entspricht 1 Punkt - timestamp, x Koordinate, y Koordinate, abstand, winkel
+    """
     n = 0
     for x in timestamps:
         with open(file, 'a') as f:
             #print(str(x) + ", " + str(xcoord_list[n]) + ", " + str(ycoord_list[n]) + ", " + str(distanz_list[n]) + ", " + str(winkel_list[n]) + "\n")
             f.write(str(x) + ", " + str(xcoordList[n]) + ", " + str(ycoordList[n]) + ", " + str(distanzList[n]) + ", " + str(winkelList[n]) + "\n")
         n += 1
+        
+def CheckIfMoving(x):
+    """
+    Checks if the Pendelum has enough movement
+    """
+    if len(x) > 1:
+        for i in range (len(x) - 2):
+            if int(x[i]) == int(x[i + 1]) == int(x[i + 2]):
+                return False
+        return True
+        
+    return False
 
-#Durchläuft liste mit Floats, schreibt lsbs in bin.txt
 
-def LsbFloat(liste1, file):
-# Löscht Inhalt bin.txt
-    with open(file, 'w') as f:
-        f.write("")
-
-# Schreibt lsbs
-    for i in liste1:
-        binary_str = ''.join(format(c, '08b') for c in struct.pack('!f', i))
-        if len(binary_str) > 8:
-            lsb = binary_str[-1]
-            with open(file, 'a') as f:
-                f.write(lsb)
-
-def Capture(numbits):
+def Capture(stopEvent, errorEvent, returnValue):
+    """
+    Tracked Konturen aus einem Live Stream, schreibt Koordinaten x, y und abstand, winkel (polares Koordinaten System)
+    Solange bis "q" im geöffneten Fenster gedrückt wird oder die Gewünschte anzahl an Bits (numbits) erreicht wurde 
+    """
+    cap = cv2.VideoCapture(-1, cv2.CAP_V4L)
     timestamp = time.time()
-    StartEngine(3, 0, True);
-    time.sleep(0.5)
-    print("GO")
-    while True:            
-        if time.time() - timestamp > 10:
-            StartEngine(2, 0, True);
+    motor.StartEngine(3, 0)
+    print(" ")
+    print("Start Camera")
+    while not stopEvent.is_set():
+        if time.time() - timestamp > 8:
+            GenerateData(returnValue)
+            t = Process(target=motor.StartEngine, args=(2, 0))
+            t.start()
             timestamp = time.time()
-            time.sleep(0.5)
-        #time.sleep(0.02)
+            if CheckIfMoving(XCOORD_LIST):
+                print("Pendelum is moving")
+            else:
+                print("Pendelum not moving")
+                cap.release()
+                cv2.destroyAllWindows()
+                errorEvent.set()
+                break 
+
         ret, frame = cap.read()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, LOWER_BLACK, UPPER_BLACK)
@@ -160,38 +207,14 @@ def Capture(numbits):
                     distanz = math.sqrt(dx ** 2 + dy ** 2)
             
                     winkel = math.acos(dx/distanz) * Sign(dy) # Winkel berechnung in Bogenmaß
-
-                    #winkel = (winkel + 360) % 360  # Gradmaß zu 360 Grad System (anstatt 0-180 und 0 - (-180))
-                    #angleStr = "Winkel: " + str(winkel)
-                    #cv2.putText(frame, angleStr, (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
                     
-                    #Ausgabe 
-                    
-                    if winkel > 0 and distanz < 220:  
-                        #print(" -- LOWER -- count: " + str(len(LOWER_WINKEL_LIST) + 1) + "\n" + "   x   : " + str(float(x)) + "\n" + "   Y   : " + str(float(y)) +"\n" + "Winkel : " + str(winkel) + "\n"+ "Abstand: " + str(distanz) + "\n" + "----------------------------")
-                        LOWER_XCOORD_LIST.append(float(x))
-                        LOWER_YCOORD_LIST.append(float(y))
-                        LOWER_DISTANZ_LIST.append(distanz)
-                        LOWER_WINKEL_LIST.append(winkel)
-                        LOWER_TIMESTAMPS.append(time.time())
-                    elif winkel < 0 and distanz <220:
-                        #print(" -- UPPER -- count: " + str(len(UPPER_WINKEL_LIST) + 1)  + "\n" + "   x   : " + str(float(x)) + "\n" + "   Y   : " + str(float(y)) +"\n" + "Winkel : " + str(winkel) + "\n"+ "Abstand: " + str(distanz) + "\n" + "----------------------------")
-                        UPPER_XCOORD_LIST.append(float(x))
-                        UPPER_YCOORD_LIST.append(float(y))
-                        UPPER_DISTANZ_LIST.append(distanz)
-                        UPPER_WINKEL_LIST.append(winkel)
-                        UPPER_TIMESTAMPS.append(time.time())
-                   
                     if distanz < 220:
-                        print("Bits: " + str(len(XCOORD_LIST) * 2))
                         XCOORD_LIST.append(float(x))
                         YCOORD_LIST.append(float(y))
                         DISTANZ_LIST.append(distanz)
                         WINKEL_LIST.append(winkel)
                         TIMESTAMPS.append(time.time())
 
-                    # Abfrage geschwindigkeit anpassen
-                    time.sleep(0.01)
                 cv2.imshow("Frame", frame)
 
         #Pausierung des programms 
@@ -203,201 +226,109 @@ def Capture(numbits):
                     break       
                 
         if cv2.waitKey(1) & 0xFF == ord('q'):
-            Coords(UPPER_XCOORD_LIST, UPPER_YCOORD_LIST, UPPER_DISTANZ_LIST, UPPER_WINKEL_LIST, UPPER_TIMESTAMPS, 'outputUpper.csv')
-            Coords(LOWER_XCOORD_LIST,LOWER_YCOORD_LIST,LOWER_DISTANZ_LIST, LOWER_WINKEL_LIST, LOWER_TIMESTAMPS, 'outputLower.csv')
-            Coords(XCOORD_LIST, YCOORD_LIST, DISTANZ_LIST, WINKEL_LIST, TIMESTAMPS, "output.csv")
-            WinkelToHex16(UPPER_WINKEL_LIST, "UpperHexBits.txt")
-            WinkelToHex16(LOWER_WINKEL_LIST, "LowerHexBits.txt")
-            WinkelToHex32(UPPER_WINKEL_LIST, "UpperHexBits32.txt")
-            WinkelToHex32(LOWER_WINKEL_LIST, "LowerHexBits32.txt")
-            LsbFloat(WINKEL_LIST, "WinkelLsb.txt")
-            LsbFloat(DISTANZ_LIST, "DistanzLsb.txt")
-            rangeToBits(XCOORD_LIST, X_MIDDLE, "rangeBitsX.txt")
-            rangeToBits(YCOORD_LIST, Y_MIDDLE, "rangeBitsY.txt")
-            break
-        
-        #elif len(LOWER_WINKEL_LIST) > (numbits / 4) or len(UPPER_WINKEL_LIST) > (numbits / 4) or len(XCOORD_LIST) > numbits:
-        elif len(XCOORD_LIST) > numbits:
-            Coords(UPPER_XCOORD_LIST, UPPER_YCOORD_LIST, UPPER_DISTANZ_LIST, UPPER_WINKEL_LIST, UPPER_TIMESTAMPS, 'outputUpper.csv')
-            Coords(LOWER_XCOORD_LIST,LOWER_YCOORD_LIST,LOWER_DISTANZ_LIST, LOWER_WINKEL_LIST, LOWER_TIMESTAMPS, 'outputLower.csv')
-            Coords(XCOORD_LIST, YCOORD_LIST, DISTANZ_LIST, WINKEL_LIST, TIMESTAMPS, "output.csv")
-            WinkelToHex(UPPER_WINKEL_LIST, "UpperHexBits.txt")
-            WinkelToHex(LOWER_WINKEL_LIST, "LowerHexBits.txt")
-            LsbFloat(WINKEL_LIST, "WinkelLsb.txt")
-            LsbFloat(DISTANZ_LIST, "DistanzLsb.txt")
-            WinkelToHex32(UPPER_WINKEL_LIST, "UpperHexBits32.txt")
-            WinkelToHex32(LOWER_WINKEL_LIST, "LowerHexBits32.txt")
-            rangeToBits(XCOORD_LIST, X_MIDDLE, "rangeBitsX.txt")
-            rangeToBits(YCOORD_LIST, Y_MIDDLE, "rangeBitsY.txt")
+            GenerateData(returnValue)
             break
 
     cap.release()
     cv2.destroyAllWindows()
 
-# Schreibt Hex Zahl für jeweikige Winkel Position
-def WinkelToHex16(winkelList, file):
-    with open(file, 'w') as f:
-        f.write("")
-    hexRanges = []
-    hexCount = {}
-    winkelHex = []
-    hexRanges.append(0)
-    # Initialisieren der Bereiche (unterer Halbkreis(pi) in 16 Bereiche teilen)
-    for i in range(16):
-        hexRanges.append(np.pi/ 16 * (i + 1))
-        if hexCount.get(i) == None and i < 16:
-            hexCount[i] = 0
 
-    # Winkel den Bereichen zuordnen, in neue Liste schreiben, und zählen für Statisik
-    for winkel in winkelList:
-        if winkel < 0:
-            winkel = winkel * -1
-        for i in range(16):
-            if winkel > hexRanges[i] and winkel < hexRanges[i + 1]:
-                # Zählen der Haufigkeit
-                hexCount[i] += 1
-                # Hex bereich anhängen
-                winkelHex.append(i)
-                break
+
+def GenerateData(returnValue):
+    """
+    Führt erschwünschte Endmethoden zur Digitalisierung aus 
+    """
+    global XCOORD_LIST
+    global YCOORD_LIST
+    global WINKEL_LIST
+    global DISTANZ_LIST
     
-    bin_list = []
+    #Coords(XCOORD_LIST, YCOORD_LIST, DISTANZ_LIST, WINKEL_LIST, TIMESTAMPS, "output.csv")
+    rangeToBits(XCOORD_LIST, X_MIDDLE, "bits.txt", 1, returnValue)
+    LsbFloat(WINKEL_LIST, "bits.txt", returnValue)
+    rangeToBits(YCOORD_LIST, Y_MIDDLE, "bits.txt", 1, returnValue)
 
-    # Hex ziffern in binär in bin.txt schreiben
-    for hex_digit in winkelHex:
-        bin_digit = bin(hex_digit)[2:].zfill(4)
-        bin_list.append(bin_digit)
-        with open(file, 'a') as f:
-            f.write(bin_digit)
-    
-    # Ausgabe Statistik der Häufigkeiten
-    print (hexCount)
-    #import matplotlib.pyplot as plt
-
-    #data = hexCount
-
-    #plt.bar(data.keys(), data.values())
-    #plt.xlabel('Hex')
-    #plt.ylabel('Count')
-    #plt.show()
-
-# Schreibt Hex Zahl für jeweikige Winkel Position
-def WinkelToHex32(winkelList, file):
-    with open(file, 'w') as f:
-        f.write("")
-    hexRanges = []
-    hexCount = {}
-    winkelHex = []
-    hexRanges.append(0)
-    # Initialisieren der Bereiche (unterer Halbkreis(pi) in 16 Bereiche teilen)
-    for i in range(32):
-        hexRanges.append(np.pi/ 32 * (i + 1))
-        if hexCount.get(i) == None and i < 32:
-            hexCount[i] = 0
+    XCOORD_LIST = []
+    YCOORD_LIST = []
+    WINKEL_LIST = []
+    DISTANZ_LIST = []
 
 
-    # Winkel den Bereichen zuordnen, in neue Liste schreiben, und zählen für Statisik
-    for winkel in winkelList:
-        if winkel < 0:
-            winkel = winkel * -1
-        for i in range(32):
-            if winkel > hexRanges[i] and winkel < hexRanges[i + 1]:
-                # Zählen der Haufigkeit
-                hexCount[i] += 1
-                # Hex bereich anhängen
-                if i < 16:
-                    winkelHex.append(i)
-                else:
-                    winkelHex.append(i - 16)
-                break
-    
-    bin_list = []
 
-    # Hex ziffern in binär in bin.txt schreiben
-    for hex_digit in winkelHex:
-        bin_digit = bin(hex_digit)[2:].zfill(4)
-        bin_list.append(bin_digit)
-        with open(file, 'a') as f:
-            f.write(bin_digit)
-    
-    print (hexCount)
-
-
-# Ermittelt vorzeichen einer Zahl
 def Sign(zahl):
+    """
+    Ermittelt vorzeichen einer Zahl
+    """
     if zahl < 0:
         return -1
     else:
         return 1
 
-def StartEngine(durationRunning, timeToWait, isRunning):
-    # debug option
-    GPIO.setwarnings(False)
-    
-    # Nummerierung der GPIO Pins nach Standard
-    GPIO.setmode(GPIO.BCM) 
-    
-    # Pin für die Motorsteuerung
-    GPIO.setup(6, GPIO.OUT)  
-    # Pin für den Hubmagnet
-    GPIO.setup(13, GPIO.OUT)  
-    
-    # Die aktuelle Zeit
-    now = time.time()
-    
-    while now > time.time()-durationRunning:
-        isRunning = True
-        # Ermöglicht den Stromfluss im Relay für den Motor
-        GPIO.output(6,1)
-        # Ermöglicht den Stromfluss im Relay fü den Hubmagnet
-        GPIO.output(13,0)
-    
-    # Unterbrechung des Stromflusses im Relay für den Motor
-    GPIO.output(6,0)   
-    # Unterbrechung des Stromflusses im Relay für den Hubmagnet   
-    GPIO.output(13,1)
-    isRunning = False   
-    # GPIO.cleanup()
-
 
 def ClearTestSetup():
-
+    """
+    Löscht Inhalt der jeweiligen Files 
+    """
     with open('output.csv', 'w') as f:
         f.write("")
 
-    with open('outputUpper.csv', 'w') as f:
-        f.write("")
-
-    with open('outputLower.csv', 'w') as f:
-        f.write("")
-
-    with open('LowerHexBits.txt', 'w') as f:
+    with open('bits.txt', 'w') as f:
         f.write("")
     
-    with open('UpperHexBits.txt', 'w') as f:
-        f.write("")
-
-    with open('lsbBitsCoordsXy.txt') as f:
-        f.write("")
-
-    with open('lsbBitsCoordsWinkelDistanz.txt') as f:
-        f.write("")
-
-    with open('LowerHexBitsInCircle.txt', 'w') as f:
-        f.write("")
     
-    with open('UpperHexBitsInCircle.txt', 'w') as f:
+
+def splitIntoQty(inputFile, qty, bits, returnValue):
+    """
+    Teilt generierte Bits aus inputFile in die gewünschte Qty und länge der BitWords
+    Gibt  Liste (returnValue) zurück mit je 1 BitWord als Eintrag in Liste
+    Gesamt Liste hat Länge Qty
+    """
+
+    with open(inputFile, 'r') as f:
+        bitStr = f.read().strip()
+        if len(bitStr) < qty * bits:
+            raise Exception("insufficient amount of bits in File: " + str(inputFile))
+
+        num_bits = len(bitStr)
+        returnValue = [bitStr[i:i+bits] for i in range(0, num_bits, bits)]
+
+        # Letzten Wert mit 0 füllen falls anzahl nicht reicht
+        lastValueLen = len(returnValue[-1])
+        if lastValueLen < bits:
+            returnValue[-1] += '0' * (bits - lastValueLen)
+
+        while len(returnValue) > qty:
+            returnValue.pop()
+        
+        return returnValue
+        
+
+
+def CheckMiddlePoint(x0, y0):
+    """
+    überprüft ob der Mittelpunkt des Pendels falsch gesetzt ist  
+    """
+    
+def LsbFloat(liste1, file, returnValue):
+    """
+    Schreibt LSB einer Float (aus Liste1) in file 
+    """
+    with open(file, 'w') as f:
         f.write("")
+    for i in liste1:
+        binary_str = ''.join(format(c, '08b') for c in struct.pack('!f', i))
+        if len(binary_str) > 8:
+            lsb = binary_str[-1]
+            write(lsb, file, returnValue)
 
+def CapturePendelum(stopEvent, errorEvent ,returnValue):
+    """
+    Hauptmethode
+    Startet Pendel 
+    """
+    CheckMiddlePoint(X_MIDDLE, Y_MIDDLE)
+    ClearTestSetup()
+    Capture(stopEvent,errorEvent ,returnValue)
+    
 
-# For Final System
-def CapturePendelum(numBits, returnValue):
-    Capture(numBits)
-    returnvalue = BINARY_STRING
-    return returnValue
-
-def CapturePendelumTest(numBits):
-    print("Start captureing")
-    Capture(numBits)
-
-
-CapturePendelumTest(100000)
+    

@@ -9,7 +9,7 @@ import KameraRaspberryPi.ObjectTracker as ot
 
 
 class Application(tk.Frame):
-    def __init__(self, master=None):
+    def __init__(self, master):
         super().__init__(master)
         self.master = master
         self.pack() # packs all widgets into the main frame 
@@ -30,15 +30,6 @@ class Application(tk.Frame):
 
         self.stopCameraB = tk.Button(self, text="Stop Camera", command=self.StopCamera)
         self.stopCameraB.pack(side="bottom")
-
-        self.startLightOneB = tk.Button(self, text="Start One Lightbarrier", command=self.StartLightOne)
-        self.startLightOneB.pack(side="bottom")
-
-       # self.startLightTwoB = tk.Button(self, text="Start Both Lightbarriers", command=self.StartLightTwo)
-       # self.startLightTwoB.pack(side="bottom")
-
-        self.stopLightB = tk.Button(self, text="Stop Lightbarrier", command=self.StopLight)
-        self.stopLightB.pack(side="bottom")
 
         self.startEngineB = tk.Button(self, text="Start Engine", command=self.StartEngine)
         self.startEngineB.pack(side="bottom")
@@ -71,8 +62,6 @@ class Application(tk.Frame):
            # ot.CapturePendelum()
            self.ChangeText("Status: Camera running")
 
-    
-
     def StopCamera(self):
     # Objecttracking stops
         self.ChangeText("Status: Camera stopped")
@@ -82,32 +71,6 @@ class Application(tk.Frame):
         elif CAMERA_RUNNING == True:
             CAMERA_RUNNING = False
             self.ChangeText("Status: Camera stopped")
-
-    
-
-    def StartLightOne(self):
-    # One Lightbarrier starts
-       self.ChangeText("Status: One Lightbarrier started")  
-       global LIGHT_RUNNING
-       LIGHT_RUNNING = True
-       if LIGHT_RUNNING == True:
-           # Lightbarrier.runOneLightbarrierParallel()  
-           self.ChangeText("Status: Lightbarrier running")  
-
-  #  def StartLightTwo(self):
-    # Both Lightbarriers starts
-   #    self.ChangeText("Status: Two Lightbarriers started")  
-    #   Lightbarrier.runTwoLightbarriersParallel()
-
-    def StopLight(self):
-    # Lightbarrier stops
-        self.ChangeText("Status: Lightbarrier stopped")  
-        global LIGHT_RUNNING
-        if LIGHT_RUNNING == False:
-           self.ChangeText("Status: Lightbarrier is not running")
-        elif LIGHT_RUNNING == True:
-            LIGHT_RUNNING = False
-            self.ChangeText("Status: Lightbarrier stopped")    
 
     def StartEngine(self):
     # Engine Tool starts
@@ -132,14 +95,12 @@ class Application(tk.Frame):
     # All tools start
         self.StartCamera
         self.StartEngine
-        self.StartLightOne
         self.ChangeText("Status: All tools started")
 
     def StopAll(self):
     # All tools stop
         self.StopCamera
         self.StopEngine
-        self.StopLight
         self.ChangeText("Status: All tools stopped")
 
 

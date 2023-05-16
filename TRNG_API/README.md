@@ -5,8 +5,11 @@
 This API manages the TrueRandomNumberGenerator.
 
 ## Requirements
+- pip packages:
+    - flask
+    - flask-restful
+    - flask-cors
 
-t. b. a.
 
 ## Scripts
 
@@ -25,3 +28,8 @@ The `Restart` directive is set to "always," which means that if the service cras
 Finally, the script specifies that the service should be installed and enabled to start on boot by using the `WantedBy=multi-user.target` directive.
 
 Overall, this script sets up a systemd service to run the TrueRandomNumberGenerator API, ensuring it starts automatically, is monitored, and restarted if necessary.
+
+
+- __init.py__: startet die REST API + ermöglicht drei Requests
+    - Requests: siehe [API Anforderungen v0.2](TRNG_API_v0.2.yaml)
+
