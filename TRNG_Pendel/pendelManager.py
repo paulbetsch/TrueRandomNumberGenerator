@@ -2,7 +2,7 @@ import time
 import random
 from multiprocessing import Process, Manager, Event
 from KameraRaspberryPi import ObjectTracker
-#from Tests import TotalFailureTest
+import Tests.TotalFailureTest as tf
 
 # Wird von der REST-API geleitet
 __CONTROLLED_BY_API = False
@@ -15,7 +15,7 @@ class PendelManager:
         pass
 
     # Wird später aufgerufen um die Funktionalität der Lichtschranke, der Kamera und der Motorisierung des Pendels zu gewährleisten.
-    def checkFunctionality(returnValue):
+    def checkFunctionality(self, returnValue):
         checkSuccessful = False
         #camera.functionalityTest()
         #enginecontrol.startuptest()
@@ -57,8 +57,8 @@ class PendelManager:
         return result
 
     # Statische Prüfung der Zufallszahlen
-    def checkBSITests(binaryData):
-        TotalFailureTest.TotalFailureTest(binaryData, False, 8)
+    def checkBSITests(self, binaryData):
+        tf.TotalFailureTest(str(binaryData), False, 8)
 
 # Returns the only instance of the PendelManger class
 def GetInstance():
