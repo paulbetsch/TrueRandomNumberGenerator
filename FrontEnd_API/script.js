@@ -1,7 +1,7 @@
 /* The code $(document).ready(function(){}) is used in jQuery and is executed when the DOM ist complety loaded */
 
 $(document).ready(function () {
-  baseUrl = "http://localhost:5000/trng";
+  baseUrl = "http://localhost:5520/trng";
   // Initialize the random number generator
   $("#init-btn").click(function () {
     // This code is using the jQuery selector "$()" to select the DOM element with the ID "init-btn".
@@ -10,10 +10,11 @@ $(document).ready(function () {
       //headers: { 'Access-Control-Allow-Origin': '*'},
       type: "GET",
       success: function () {
-        $("#init-status").text("Initialized");
+        $("#init-status").text("Initialized.");
       },
       error: function (jqXHR, textStatus, errorThrown) {
-        $("#init-status").text("Failed to initialize");
+        if (jqXHR.status === 403) $("#init-status").text("system already running.");
+        else $("#init-status").text("Failed to initialize.");
       },
     });
   });
@@ -24,10 +25,10 @@ $(document).ready(function () {
       url: baseUrl + "/randomNum/shutdown",
       type: "GET",
       success: function () {
-        $("#init-status").text("Standby mode");
+        $("#init-status").text("Standby mode.");
       },
       error: function (jqXHR, textStatus, errorThrown) {
-        $("#init-status").text("Failed to shutdown");
+        $("#init-status").text("Failed to shutdown.");
       },
     });
   });
@@ -49,14 +50,15 @@ $(document).ready(function () {
       },
       error: function (jqXHR, textStatus, errorThrown) {
         if (jqXHR.status === 500) {
-          $("#result").text(
-            "System deliverd an empty array; check noise source"
+          $("#init-status").text(
+            "System deliverd an empty array; check noise source."
           );
         } else if (jqXHR.status === 432) {
-          $("#result").text("System not ready; Initalize again");
-        }else{
-            $("#result").text("Error: "+errorThrown);
-
+          $("#init-status").text("System not ready; Initalize again.");
+        } else {
+          $("#init-status").text(
+            "API has not been started yet. " + errorThrown
+          );
         }
       },
     });

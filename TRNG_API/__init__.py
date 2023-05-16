@@ -61,7 +61,7 @@ class InitRandomNums(Resource):
     def get(self):
         global TRNG_RUNNING
         if(TRNG_RUNNING):
-            response = make_response(jsonify({'description': 'system already running'}), 200)
+            response = make_response(jsonify({'description': 'system already running'}), 403)
             response.headers['Access-Control-Allow-Origin'] = '*'
             return response
         else:
@@ -92,4 +92,4 @@ api.add_resource(ShutdownRandomNums, '/randomNum/shutdown')
 
 if __name__ == '__main__':
 
-     app.run()
+     app.run(port=5520)
