@@ -1,6 +1,6 @@
 # TRNG API
 
-## ABout
+## About
 
 This API manages the TrueRandomNumberGenerator.
 
