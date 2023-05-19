@@ -50,22 +50,31 @@ class PendelManager:
             goodByts = []
             failCounter = 0
 
+            # As long as the objectTracker has no errors, we can sample further data
+            # The ObjectTracker.py is only allowed to stop the Generationprocess if any errors happen.
             while not errorEvent.is_set():
 
+                # If eight times a byte or more are in the Queue we want to sample them
+                # TODO: maybe set the transfer rate to the startsize of the Online Tests
                 if(randomValues.qsize >= 8):
+                    # Transfer eight objects over multiprocess communication from the ObjectTracker.py to pendelManager.py
                     for i in range(0, 8):
                         byts.append(randomValues.get())
 
+                    # 128 bytes = 1024 bits have been transfered to the pendelManager, the quality of the bits is checked with the 
+                    # Tests explained in PTG.2. provided by the BSI in Germany.
                     if(len(byts) >= 128):
                         if(online.onlineTest(byts)):
                             goodByts += byts
                             failCounter = 0
-                        elif(failCounter + 1 == 10):
+                        # If the Tests fail ten times in a row, the probality of an error in the samplingprocess is very high.
+                        # Therefore the generationprocess is stopped and the API will provide an statuscode providing further information                        elif(failCounter + 1 == 10):
                             errorEvent.set()
                         else:
                             failCounter += 1
                         byts = []
 
+                    # If the requested amount of bits has been reached, the generation process will be stopped and the stopEvent will be triggerd
                     if(goodByts == (quantity * numBits)):
                         break
                 else:
