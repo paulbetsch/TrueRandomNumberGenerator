@@ -36,36 +36,49 @@ class PendelManager:
         #resultArray which will be returned
         result = []
         with self.manager as m:
-            #Process storage
-            procs = []
             # Shared Memory for Random Bits
             randomValues = Queue()
             stopEvent = Event()
             errorEvent = Event()
 
-            videoProc = Process(target=ObjectTracker.CapturePendelum, args=(stopEvent, errorEvent, randomValues))
-            procs.append(videoProc)
-
             # Start the generation of random values
+            videoProc = Process(target=ObjectTracker.CapturePendelum, args=(stopEvent, errorEvent, randomValues))
             videoProc.start()
 
             # Do checks with numbers and generate as much as the params require here
             byts = []
+            goodByts = []
+            failCounter = 0
 
             while not errorEvent.is_set():
+
                 if(randomValues.qsize >= 8):
                     for i in range(0, 8):
                         byts.append(randomValues.get())
-                if(len(byts) >= 128):
-                    #TODO: Do tests here (maybe in diffrent processes)
-                    onlineProc = Process(target=online.onlineTest, args=(byts))
-                    onlineProc.start()
-                    byts = []
 
+                    if(len(byts) >= 128):
+                        if(online.onlineTest(byts)):
+                            goodByts += byts
+                            failCounter = 0
+                        elif(failCounter + 1 == 10):
+                            errorEvent.set()
+                        else:
+                            failCounter += 1
+                        byts = []
 
-                testProc = Process(target=online.onlineTest, args=())
-                pass
+                    if(goodByts == (quantity * numBits)):
+                        break
+                else:
+                    # TODO: implement possible timeout, when no bytes are retrieved from videoProc
+                    time.sleep(0.1)
             
+            # TODO: prepare goodByts for return
+            # TODO: errorEvent handling
+            if(errorEvent.is_set()):
+                pass
+            else:
+                pass
+
             # Stop the generation of random values
             stopEvent.set()
             # End Process
