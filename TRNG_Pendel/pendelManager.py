@@ -1,8 +1,13 @@
 import time
 import random
-from multiprocessing import Process, Manager, Event
+from multiprocessing import Process, Queue, Manager, Event
 from KameraRaspberryPi import ObjectTracker
-import Tests.TotalFailureTest as tf
+import Tests.FunctionalityTestCamera as cameraFunc
+import Tests.FunctionalityTestEngine as engineFunc
+import Tests.FunctionalityTestMagnet as magnetFunc
+import Tests.StartUpTest as startUp
+import Tests.OnlineTest as online
+import Tests.TotalFailureTest as toft
 
 # Wird von der REST-API geleitet
 __CONTROLLED_BY_API = False
@@ -15,14 +20,15 @@ class PendelManager:
         pass
 
     # Wird später aufgerufen um die Funktionalität der Lichtschranke, der Kamera und der Motorisierung des Pendels zu gewährleisten.
-    def checkFunctionality(self, returnValue):
-        checkSuccessful = False
-        #camera.functionalityTest()
-        #enginecontrol.startuptest()
-        #camera.startuptest()
-        #if(ligtbarrier and enginecontrol and camera):
-        #   checkSuccessful = True
-        returnValue = checkSuccessful
+    def checkFunctionality(self):
+        # Check if all components are ready to work
+        camWorks = cameraFunc.CheckCameraFunctionality()
+        engineWorks = engineFunc.CheckEngineFunctionality()
+        magnetWorks = magnetFunc.CheckMagnetFunctionality()
+
+        # Only functional if all components function correctly
+        return camWorks and engineWorks and magnetWorks
+
 
     # Hier soll der Motor gesteuert werden, und die Werte der Kamera und der Lichtschranke ausgewertet werden
     # Aktuell zu Testzwecken werden hier nur pseudozufallszahlen generiert
@@ -30,25 +36,49 @@ class PendelManager:
         #resultArray which will be returned
         result = []
         with self.manager as m:
-            #Process storage
-            procs = []
             # Shared Memory for Random Bits
-            randomValues = m.list()
+            randomValues = Queue()
             stopEvent = Event()
             errorEvent = Event()
 
-            videoProc = Process(target=ObjectTracker.CapturePendelum, args=(stopEvent, errorEvent, randomValues))
-            procs.append(videoProc)
-
             # Start the generation of random values
+            videoProc = Process(target=ObjectTracker.CapturePendelum, args=(stopEvent, errorEvent, randomValues))
             videoProc.start()
 
-            # Do checks with numbers and generate as much as the params require
-            # here
+            # Do checks with numbers and generate as much as the params require here
+            byts = []
+            goodByts = []
+            failCounter = 0
+
             while not errorEvent.is_set():
-                #TODO: Do tests here (maybe in diffrent processes)
-                pass
+
+                if(randomValues.qsize >= 8):
+                    for i in range(0, 8):
+                        byts.append(randomValues.get())
+
+                    if(len(byts) >= 128):
+                        if(online.onlineTest(byts)):
+                            goodByts += byts
+                            failCounter = 0
+                        elif(failCounter + 1 == 10):
+                            errorEvent.set()
+                        else:
+                            failCounter += 1
+                        byts = []
+
+                    if(goodByts == (quantity * numBits)):
+                        break
+                else:
+                    # TODO: implement possible timeout, when no bytes are retrieved from videoProc
+                    time.sleep(0.1)
             
+            # TODO: prepare goodByts for return
+            # TODO: errorEvent handling
+            if(errorEvent.is_set()):
+                pass
+            else:
+                pass
+
             # Stop the generation of random values
             stopEvent.set()
             # End Process
