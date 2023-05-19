@@ -1,6 +1,6 @@
 import time
 import random
-from multiprocessing import Process, Manager, Event
+from multiprocessing import Process, Queue, Manager, Event
 from KameraRaspberryPi import ObjectTracker
 import Tests.FunctionalityTestCamera as cameraFunc
 import Tests.FunctionalityTestEngine as engineFunc
@@ -39,7 +39,7 @@ class PendelManager:
             #Process storage
             procs = []
             # Shared Memory for Random Bits
-            randomValues = m.list()
+            randomValues = Queue()
             stopEvent = Event()
             errorEvent = Event()
 
@@ -49,11 +49,21 @@ class PendelManager:
             # Start the generation of random values
             videoProc.start()
 
-            # Do checks with numbers and generate as much as the params require
-            # here
+            # Do checks with numbers and generate as much as the params require here
+            byts = []
+
             while not errorEvent.is_set():
-                #TODO: Do tests here (maybe in diffrent processes)
-                testProc = Process(target=online.Online., args=)
+                if(randomValues.qsize >= 8):
+                    for i in range(0, 8):
+                        byts.append(randomValues.get())
+                if(len(byts) >= 128):
+                    #TODO: Do tests here (maybe in diffrent processes)
+                    onlineProc = Process(target=online.onlineTest, args=(byts))
+                    onlineProc.start()
+                    byts = []
+
+
+                testProc = Process(target=online.onlineTest, args=())
                 pass
             
             # Stop the generation of random values
