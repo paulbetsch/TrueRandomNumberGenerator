@@ -2,7 +2,12 @@ import time
 import random
 from multiprocessing import Process, Manager, Event
 from KameraRaspberryPi import ObjectTracker
-import Tests.TotalFailureTest as tf
+import Tests.FunctionalityTestCamera as cameraFunc
+import Tests.FunctionalityTestEngine as engineFunc
+import Tests.FunctionalityTestMagnet as magnetFunc
+import Tests.StartUpTest as startUp
+import Tests.OnlineTest as online
+import Tests.TotalFailureTest as toft
 
 # Wird von der REST-API geleitet
 __CONTROLLED_BY_API = False
@@ -15,14 +20,15 @@ class PendelManager:
         pass
 
     # Wird später aufgerufen um die Funktionalität der Lichtschranke, der Kamera und der Motorisierung des Pendels zu gewährleisten.
-    def checkFunctionality(self, returnValue):
-        checkSuccessful = False
-        #camera.functionalityTest()
-        #enginecontrol.startuptest()
-        #camera.startuptest()
-        #if(ligtbarrier and enginecontrol and camera):
-        #   checkSuccessful = True
-        returnValue = checkSuccessful
+    def checkFunctionality(self):
+        # Check if all components are ready to work
+        camWorks = cameraFunc.CheckCameraFunctionality()
+        engineWorks = engineFunc.CheckEngineFunctionality()
+        magnetWorks = magnetFunc.CheckMagnetFunctionality()
+
+        # Only functional if all components function correctly
+        return camWorks and engineWorks and magnetWorks
+
 
     # Hier soll der Motor gesteuert werden, und die Werte der Kamera und der Lichtschranke ausgewertet werden
     # Aktuell zu Testzwecken werden hier nur pseudozufallszahlen generiert
@@ -47,6 +53,7 @@ class PendelManager:
             # here
             while not errorEvent.is_set():
                 #TODO: Do tests here (maybe in diffrent processes)
+                testProc = Process(target=online.Online., args=)
                 pass
             
             # Stop the generation of random values
