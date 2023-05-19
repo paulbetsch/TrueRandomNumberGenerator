@@ -1,6 +1,6 @@
 # TRNG Analyse
 
-## ABout
+## About
 This Folder contains a few Python Scripts which calculate the behavior of our Tri-Pendulum in an ideal enviroment without any confounding factors.
 The behavior of the pendelum is being calculate by geometric derivation.
 

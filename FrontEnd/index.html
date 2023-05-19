@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>True Random Number Generator - API Example</title>
+    <script src="jquery-3.6.0-dist/jquery-3.6.0.min.js"></script>
+    <script src="script.js"></script>
+    <link
+      href="bootstrap-5.2.3-dist/css/bootstrap.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link 
+      href="style.css" 
+      rel="stylesheet" 
+      type="text/css"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="leftheader">
+        <img
+          src="Logo_Connect_Tech_stay_connected.jpeg"
+          alt="logo team"
+          width="150"
+          height="160"
+		      style="margin-top: 10px"
+        />
+      </div>
+      <div class="rightheader">
+        <h1>True Random Number Generator - API Example</h1>
+      </div>
+    </header>
+
+    <div class="mitte">
+      <p>
+        This is an web page that demonstrates how to use the True Random
+        Number Generator API to generate random bit sequences.
+      </p>
+      <p id="status">
+        <b>RNG Status:</b> <span id="init-status">Not initialized.</span>
+      </p>
+      <form>
+        <label for="quantity-input">Quantity:</label>
+        <input
+          type="number"
+          id="quantity-input"
+          name="quantity"
+          min="0"
+        /><br /><br />
+        <label for="numBits-input">Number of bits:</label>
+        <input
+          type="number"
+          id="numBits-input"
+          name="numBits"
+          min="0"
+        /><br /><br />
+        <input
+          id="init-btn"
+          class="btn btn-primary"
+          type="button"
+          value="Initialize"
+        />
+        <input
+          id="shutdown-btn"
+          class="btn btn-primary"
+          type="button"
+          value="Shutdown"
+        />
+        <input
+          id="generate-btn"
+          class="btn btn-primary"
+          type="button"
+          value="Generate"
+        />
+        <p id="result"><b>Result: </b></p>
+        <pre id="result"></pre>
+      </form>
+    </div>
+  </body>
+</html>
