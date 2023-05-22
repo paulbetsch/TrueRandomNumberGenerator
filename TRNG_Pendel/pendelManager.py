@@ -11,7 +11,7 @@ import Tests.TotalFailureTest as toft
 
 # Wird von der REST-API geleitet
 __CONTROLLED_BY_API = False
-__manager = ''
+__manager = None
 
 # Die klasse sollte intern das multiprocessing verwalten
 class PendelManager:
@@ -158,7 +158,8 @@ if __name__ == '__main__':
     print("Executed when called directly")
     # Eventuell können wir hier eine Menüführung über CLI implementieren
     __CONTROLLED_BY_API = False
-    __manager = PendelManager(__CONTROLLED_BY_API)
+    if(__manager == None):
+        __manager = PendelManager()
 
     # For Testing:
     #__manager.generateRandomBits(10, 100)
@@ -167,4 +168,5 @@ if __name__ == '__main__':
 else:
     print("Executed when imported.")
     __CONTROLLED_BY_API = True
-    __manager = PendelManager(__CONTROLLED_BY_API)
+    if(__manager == None):
+        __manager = PendelManager()
