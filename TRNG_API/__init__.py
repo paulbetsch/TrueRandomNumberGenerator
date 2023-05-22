@@ -25,18 +25,21 @@ class GetRandomNums(Resource):
         global TRNG_RUNNING
         response = ''
         manager = pendelManager.GetInstance()
+        # len of result array given by parameter
+        quantity = request.args.get('quantity', default=1, type=int)
+        #len of the random Bits
+        numBits = request.args.get('numBits', default=1, type=int)
 
         if(not TRNG_RUNNING):
             response = make_response(jsonify({'description': 'system not ready; try init'}), 432)
         else:
             # Call generation from pendelManager
-            result = []
-            # TODO call manager.generateRandomBits here
-            if(len(result) > 0):
+            try:
+                result = manager.generateRandomBits(quantity, numBits)
                 response = make_response(result, 200)
-            else:
-                response = make_response(jsonify({'description': 'system deliverd an empty array; check noise source'}), 500)
-
+            except Exception:
+                response = make_response(jsonify({'description': 'data generation failed; check noise source'}), 500)
+            
         response.headers['Access-Control-Allow-Origin'] = '*'
         return response
 
