@@ -15,8 +15,8 @@ __manager = ''
 
 # Die klasse sollte intern das multiprocessing verwalten
 class PendelManager:
-    def __init__(self, controlledByAPI):
-        #self.manager = Manager()
+    def __init__(self):
+        self.manager = Manager()
         pass
     
     def __cut_string(self, string, position, length):
@@ -158,9 +158,8 @@ if __name__ == '__main__':
     print("Executed when called directly")
     # Eventuell können wir hier eine Menüführung über CLI implementieren
     __CONTROLLED_BY_API = False
-    print("Before Cstor")
     __manager = PendelManager(__CONTROLLED_BY_API)
-    print("After cstor")
+
     # For Testing:
     #__manager.generateRandomBits(10, 100)
 
