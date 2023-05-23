@@ -4,7 +4,7 @@ import subprocess
 from PIL import Image
 
 # This method checks the functionality of the Raspberry Pi Camera Module
-def CheckFunctionality():
+def CheckCameraFunctionality():
     try:
         # Create tmp directory for testing picture and video
         os.mkdir('tmp')
