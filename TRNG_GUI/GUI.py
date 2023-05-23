@@ -43,7 +43,7 @@ class Application(tk.Frame):
     ENGINE_RUNNING = False
     # setting global variables to false
     
-    def __init__(self, master=None):
+    def __init__(self, master):
         # initializing self
         super().__init__(master)
         self.master = master
