@@ -1,5 +1,5 @@
 import time
-import random
+from ErrorEvent import ErrorEvent
 from multiprocessing import Process, Queue, Manager, Event
 from KameraRaspberryPi import ObjectTracker
 import Tests.FunctionalityTestCamera as cameraFunc
@@ -11,6 +11,7 @@ import Tests.TotalFailureTest as toft
 
 # Wird von der REST-API geleitet
 __CONTROLLED_BY_API = False
+BsiInitTestsPassed = None
 __manager = None
 
 # Die klasse sollte intern das multiprocessing verwalten
@@ -65,6 +66,8 @@ class PendelManager:
 
     # Wird später aufgerufen um die Funktionalität der Lichtschranke, der Kamera und der Motorisierung des Pendels zu gewährleisten.
     def checkFunctionality(self):
+        global BsiInitTestsPassed
+        BsiInitTestsPassed = False
         # Check if all components are ready to work
         # Only functional if all components function correctly
         if(cameraFunc.CheckCameraFunctionality() and engineFunc.CheckEngineFunctionality() and magnetFunc.CheckMagnetFunctionality()):
@@ -72,9 +75,9 @@ class PendelManager:
             hexNums = self.generateRandomBits(18, 100)
             # convert hexNums to binary
             binaryData = self.__hexArrayToBinaryArray(hexNums)
-            return self.checkBSITests(binaryData)
+            BsiInitTestsPassed = self.checkBSITests(binaryData)
         else:
-            return False
+            BsiInitTestsPassed = False
 
     # Hier soll der Motor gesteuert werden, und die Werte der Kamera und der Lichtschranke ausgewertet werden
     # Aktuell zu Testzwecken werden hier nur pseudozufallszahlen generiert
@@ -85,7 +88,7 @@ class PendelManager:
             # Shared Memory for Random Bits
             randomValues = Queue()
             stopEvent = Event()
-            errorEvent = Event()
+            errorEvent = ErrorEvent()
 
             # Start the generation of random values
             videoProc = Process(target=ObjectTracker.CapturePendelum, args=(stopEvent, errorEvent, randomValues))

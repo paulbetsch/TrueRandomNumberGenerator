@@ -1,6 +1,4 @@
-import random
-import json
-import time
+import threading
 from flask import Flask, request, jsonify, make_response
 from flask_restful import Resource, Api
 from flask_cors import CORS
@@ -12,7 +10,7 @@ TRNG_RUNNING = False
 # App configs (TODO: change to WSGI before Production)
 app = Flask(__name__)
 CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
+#app.config['CORS_HEADERS'] = 'Content-Type'
 api = Api(app)
 api.prefix = '/trng'
 
@@ -51,12 +49,11 @@ class InitRandomNums(Resource):
         if(TRNG_RUNNING):
             response = make_response(jsonify({'description': 'system already running'}), 403)
         else:
-            # TODO set time out to 60 seconds
-            # TODO make gloabl
             manager = pendelManager.GetInstance()
-            functional = manager.checkFunctionality()
+            t = threading.Thread(target=manager.checkFunctionality)
+            t.join(timeout=60)
             
-            if(functional):
+            if(pendelManager.BsiInitTestsPassed):
                 TRNG_RUNNING = True
                 response = make_response(jsonify({'description': 'system initialized'}), 200)
             else:
