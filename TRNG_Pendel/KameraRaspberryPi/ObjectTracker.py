@@ -67,13 +67,13 @@ def CheckIfMoving(x):
     """
     Checks if the Pendelum has enough movement
     """
-    if len(x) > 1:
-        for i in range (len(x) - 2):
-            if int(x[i]) == int(x[i + 1]) == int(x[i + 2]):
-                return False
-        return True
-        
-    return False
+    if len(x) < 1:
+        return False
+
+    for i in range (len(x) - 2):
+        if int(x[i]) == int(x[i + 1]) == int(x[i + 2]):
+            return False
+    return True
 
 
 def Capture(stopEvent, errorEvent, sharedList):

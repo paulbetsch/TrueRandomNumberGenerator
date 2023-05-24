@@ -1,6 +1,4 @@
-import random
-import json
-import time
+import threading
 from flask import Flask, request, jsonify, make_response
 from flask_restful import Resource, Api
 from flask_cors import CORS
@@ -12,7 +10,7 @@ TRNG_RUNNING = False
 # App configs (TODO: change to WSGI before Production)
 app = Flask(__name__)
 CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
+#app.config['CORS_HEADERS'] = 'Content-Type'
 api = Api(app)
 api.prefix = '/trng'
 
@@ -25,18 +23,21 @@ class GetRandomNums(Resource):
         global TRNG_RUNNING
         response = ''
         manager = pendelManager.GetInstance()
+        # len of result array given by parameter
+        quantity = request.args.get('quantity', default=1, type=int)
+        #len of the random Bits
+        numBits = request.args.get('numBits', default=1, type=int)
 
         if(not TRNG_RUNNING):
             response = make_response(jsonify({'description': 'system not ready; try init'}), 432)
         else:
             # Call generation from pendelManager
-            result = []
-            # TODO call manager.generateRandomBits here
-            if(len(result) > 0):
+            try:
+                result = manager.generateRandomBits(quantity, numBits)
                 response = make_response(result, 200)
-            else:
-                response = make_response(jsonify({'description': 'system deliverd an empty array; check noise source'}), 500)
-
+            except Exception:
+                response = make_response(jsonify({'description': 'data generation failed; check noise source'}), 500)
+            
         response.headers['Access-Control-Allow-Origin'] = '*'
         return response
 
@@ -48,12 +49,11 @@ class InitRandomNums(Resource):
         if(TRNG_RUNNING):
             response = make_response(jsonify({'description': 'system already running'}), 403)
         else:
-            # TODO set time out to 60 seconds
-            # TODO make gloabl
             manager = pendelManager.GetInstance()
-            functional = manager.checkFunctionality()
+            t = threading.Thread(target=manager.checkFunctionality)
+            t.join(timeout=60)
             
-            if(functional):
+            if(pendelManager.BsiInitTestsPassed):
                 TRNG_RUNNING = True
                 response = make_response(jsonify({'description': 'system initialized'}), 200)
             else:

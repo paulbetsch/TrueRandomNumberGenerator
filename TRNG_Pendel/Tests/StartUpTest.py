@@ -14,21 +14,21 @@ from scipy.special import erfc as erfc
         pass
 """
 
-def StartUpTest(binaryArray):
+def StartUpTest(binaryString: str):
     """
     Implements two statistical Test to ensure the provided Bit Array has a good randomness.
     Input:
-        binaryArray: an array with bits. Canbe Provided by bin()[2:] method.
+        binaryString: an string with bits. Canbe Provided by bin()[2:] method.
     Return:
         True if both statistical tests (monobit and chi-squared gof) are successful. False if one of them is not passed.
     """
     #TODO: Test the tests and update to ensure X Bit array is used
-    if(__test_monobit(binaryArray) and __chi2_gof_test(binaryArray)):
+    if(__test_monobit(binaryString) and __chi2_gof_test(binaryString)):
         return True
     else:
         return False
 
-def __test_monobit(binaryArray):
+def __test_monobit(binaryString: str):
     """
     Implements the Monobit Test on a binary array.
     Input:
@@ -36,12 +36,12 @@ def __test_monobit(binaryArray):
     Description and Evaluation rule:
         The Monobit Test is passed when the sum of all bits is in the interval [9654;10346]. Otherwise it failed.
     """
-    arrayLength = len(binaryArray)
+    arrayLength = len(binaryString)
 
     # Variable for S(n)
     count = 0
     # Iterate each bit in the string and compute for S(n)
-    for bit in binaryArray:
+    for bit in binaryString:
         if bit == 0:
             # If bit is 0, then -1 from the S(n)
             count -= 1
@@ -60,7 +60,7 @@ def __test_monobit(binaryArray):
 
 
 
-def __chi2_gof_test(binaryArray):
+def __chi2_gof_test(binaryString: str):
     """
     Implements a chi-squared goodness of fit test on a binary array.
     Input:
@@ -68,12 +68,9 @@ def __chi2_gof_test(binaryArray):
     Description and Evaluation rule:
         The Test is passed when the P-Value is smaller than 1.0. Otherwise it failed.
     """
-    print("Bits: " + binaryArray)
+    print("Bits: " + binaryString)
     # Define the expected frequencies assuming a discrete uniform distribution
-    n = len(binaryArray)
-
-    # Convert to binary string for observed_frequency
-    binaryString = str(binaryArray)
+    n = len(binaryString)
 
     # Count the observed frequencies
     observed_freq = [binaryString.count('0'), binaryString.count('1')]
