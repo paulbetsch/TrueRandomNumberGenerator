@@ -26,7 +26,7 @@ class PendelManager:
         end_index = position + length
         
         # Perform the string slicing
-        cut_out_string = string[:start_index] + string[end_index:]
+        cut_out_string = string[start_index:end_index]
         
         return cut_out_string
 
@@ -51,18 +51,20 @@ class PendelManager:
             position += numBits
         return result
 
-    def __hexArrayToBinaryArray(self, hex_array):
-        binary_array = []
+    def __hexArrayToBinaryString(self, hex_array):
+        binaryString = ""
 
         for hex_string in hex_array:
             for hex_digit in hex_string:
                 # Convert the hex digit to a 4-bit binary string
-                binary_digit = bin(int(hex_digit))[2:]
-                
+                decimal = int(hex_digit, 16) 
+                binary_digit = bin(decimal)[2:]
+                while(len(binary_digit) < 4):
+                    binary_digit = '0' + binary_digit
                 # Convert the binary digit string to a binary array
-                binary_array.extend([int(bit) for bit in binary_digit])
+                binaryString += binary_digit
         
-        return binary_array
+        return binaryString
 
     # Wird später aufgerufen um die Funktionalität der Lichtschranke, der Kamera und der Motorisierung des Pendels zu gewährleisten.
     def checkFunctionality(self):
@@ -73,17 +75,22 @@ class PendelManager:
         if(cameraFunc.CheckCameraFunctionality() and engineFunc.CheckEngineFunctionality() and magnetFunc.CheckMagnetFunctionality()):
             # Check if noise source works correctly
             hexNums = self.generateRandomBits(18, 100)
+            #print(hexNums)
             # convert hexNums to binary
-            binaryData = self.__hexArrayToBinaryArray(hexNums)
+            binaryData = self.__hexArrayToBinaryString(hexNums)
+            #print(binaryData)
             BsiInitTestsPassed = self.checkBSITests(binaryData)
         else:
             BsiInitTestsPassed = False
-
+        return BsiInitTestsPassed
     # Hier soll der Motor gesteuert werden, und die Werte der Kamera und der Lichtschranke ausgewertet werden
     # Aktuell zu Testzwecken werden hier nur pseudozufallszahlen generiert
     def generateRandomBits(self, quantity, numBits):
         #resultArray which will be returned
         result = []
+        
+        self.manager = Manager()
+        
         with self.manager as m:
             # Shared Memory for Random Bits
             randomValues = Queue()
@@ -95,37 +102,39 @@ class PendelManager:
             videoProc.start()
 
             # Do checks with numbers and generate as much as the params require here
-            byts = []
+            bits = ""
             goodBytes = ""
             failCounter = 0
 
             # As long as the objectTracker has no errors, we can sample further data
             # The ObjectTracker.py is only allowed to stop the Generationprocess if any errors happen.
-            while not errorEvent.is_set():
+            while not errorEvent.isEventSet():
 
                 # If eight times a byte or more are in the Queue we want to sample them
                 # TODO: maybe set the transfer rate to the startsize of the Online Tests
-                if(randomValues.qsize >= 8):
+                # TODO: check if bits as a string works
+                if(randomValues.qsize() >= 8):
                     # Transfer eight objects over multiprocess communication from the ObjectTracker.py to pendelManager.py
                     for i in range(0, 8):
-                        byts.append(randomValues.get())
-
+                        bits += randomValues.get()
                     # 128 bytes = 1024 bits have been transfered to the pendelManager, the quality of the bits is checked with the 
-                    # Tests explained in PTG.2. provided by the BSI in Germany.
-                    if(len(byts) >= 8):
-                        if(online.onlineTest(byts)):
-                            goodBytes += byts
+                    # Tests explaineqqqd in PTG.2. provided by the BSI in Germany.
+                    if(len(bits) >= 1024):                      
+                        if(online.onlineTest(bits)):
+                            goodBytes += bits
                             failCounter = 0
+                            print("goodBytes:"  + str(len(goodBytes)))
                         elif(failCounter + 1 == 10):
                             # If the Tests fail ten times in a row, the probality of an error in the samplingprocess is very high.
                             # Therefore the generationprocess is stopped and the API will provide an statuscode providing further information                        elif(failCounter + 1 == 10):
-                            errorEvent.set()
+                            errorEvent.setErrorDescription("Online Test failed 10 Times in a row")
+                            errorEvent.setEvent()
                         else:
                             failCounter += 1
-                        byts = []
+                        bits = ""
 
                     # If the requested amount of bits has been reached, the generation process will be stopped and the stopEvent will be triggerd
-                    if(len(goodBytes) == (quantity * numBits)):
+                    if(len(goodBytes) >= (quantity * numBits)):
                         # Stop the generation of random values
                         stopEvent.set()
                         break
@@ -138,7 +147,7 @@ class PendelManager:
 
 
             # TODO: errorEvent handling
-            if(errorEvent.is_set()):
+            if(errorEvent.isEventSet()):
                 raise Exception("An Error Occured: Pendullum not moving.")
             else:
                 pass
@@ -165,7 +174,12 @@ if __name__ == '__main__':
         __manager = PendelManager()
 
     # For Testing:
-    #__manager.generateRandomBits(10, 100)
+    functional = __manager.checkFunctionality()
+    if(functional):   
+        print("Functional") 
+        print(__manager.generateRandomBits(20, 100))
+    else:
+        print("Not Functional")
 
 # oder ob er von der API aus aufgerufen wird.            
 else:
