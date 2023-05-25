@@ -36,27 +36,28 @@ def __test_monobit(binaryString: str):
     Description and Evaluation rule:
         The Monobit Test is passed when the sum of all bits is in the interval [9654;10346]. Otherwise it failed.
     """
-    arrayLength = len(binaryString)
+    length_of_bit_string = len(binaryString)
 
     # Variable for S(n)
     count = 0
     # Iterate each bit in the string and compute for S(n)
     for bit in binaryString:
-        if bit == 0:
+        if bit == "0":
             # If bit is 0, then -1 from the S(n)
             count -= 1
-        elif bit == 1:
+        elif bit == "1":
             # If bit is 1, then +1 to the S(n)
             count += 1
 
     # Compute the test statistic
-    sObs = count / sqrt(arrayLength)
+    sObs = count / sqrt(length_of_bit_string)
 
-    # Compute pValue
-    pValue = erfc(fabs(sObs) / sqrt(2))
+    # Compute p-Value
+    p_value = erfc(fabs(sObs) / sqrt(2))
 
-    # return true if the pValue is bigger than 0.01
-    return pValue >= 0.01
+    # return a p_value and randomness result
+    print("Monobit: " + str(p_value >= 0.01))
+    return (p_value >= 0.01)
 
 
 
@@ -68,20 +69,21 @@ def __chi2_gof_test(binaryString: str):
     Description and Evaluation rule:
         The Test is passed when the P-Value is smaller than 1.0. Otherwise it failed.
     """
-    print("Bits: " + binaryString)
     # Define the expected frequencies assuming a discrete uniform distribution
     n = len(binaryString)
-
     # Count the observed frequencies
     observed_freq = [binaryString.count('0'), binaryString.count('1')]
 
     # Calculate the expected frequencies
     expected_freq = [n/2, n/2]
 
+    #print('Expexted Frequency: ' + str(expected_freq) + 'Observed Frequency: ' + str(observed_freq))
+
     # Perform the chi-squared goodness of fit test
     testStat, pValue = stats.chisquare(observed_freq, expected_freq)
 
-    print(f"Test statistic: {testStat:.2f}")
-    print(f"P-value: {pValue:.4f}")
+    #print(f"Test statistic: {testStat:.2f}")
+    #print(f"P-value: {pValue:.4f}")
+    print("Chi-Squared: " + str(pValue >= 0.01))
     # According to the BSI Standard PTG2 the test variable of the X2-Test must be less than 65.0 # TODO: Figure out which variable should be tested
     return pValue >= 0.01
