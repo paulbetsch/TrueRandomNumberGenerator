@@ -21,20 +21,20 @@ def StartEngine(durationRunning, timeToWait):
     
     while now > time.time()-durationRunning:
         # Ermöglicht den Stromfluss im Relay für den Motor
-        GPIO.output(6,1)
+        GPIO.output(6,0)
         # Ermöglicht den Stromfluss im Relay fü den Hubmagnet
-        GPIO.output(13,1)
+        GPIO.output(13,0)
     
     # Unterbrechung des Stromflusses im Relay für den Motor
-    GPIO.output(6,0)   
+    GPIO.output(6,1)   
     # Unterbrechung des Stromflusses im Relay für den Hubmagnet   
-    GPIO.output(13,0) 
+    GPIO.output(13,1) 
     sleep(timeToWait)
     # GPIO.cleanup()
 
 # Diese Methode stoppt den Motor
 def StopEngine():
     # Unterbrechung des Stromflusses im Relay für den Motor
-    GPIO.output(6,0)   
+    GPIO.output(6,1)   
     # Unterbrechung des Stromflusses im Relay für den Hubmagnet   
-    GPIO.output(13,0)
+    GPIO.output(13,1)

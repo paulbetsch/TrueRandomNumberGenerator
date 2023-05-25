@@ -27,6 +27,7 @@ def monobit_test(binary_data: str):
     p_value = erfc(fabs(sObs) / sqrt(2))
 
     # return a p_value and randomness result
+    print("Monobit: " + str(p_value >= 0.01))
     return p_value, (p_value >= 0.01)
 
 def block_frequency_test(binary_data: str, block_size=128):
@@ -74,6 +75,7 @@ def block_frequency_test(binary_data: str, block_size=128):
     # Compute P-Value
     p_value = gammaincc(number_of_blocks / 2, result / 2)
 
+    print("Block Frequency: " + str(p_value >= 0.01))
     return p_value, (p_value >= 0.01)
 
 def run_test(binary_data: str):
@@ -103,6 +105,7 @@ def run_test(binary_data: str):
         # Step 4 - Compute p_value = erfc((|vObs − 2nπ * (1−π)|)/(2 * sqrt(2n) * π * (1−π)))
         p_value = erfc(abs(vObs - (2 * length_of_binary_data * pi * (1 - pi))) / (2 * sqrt(2 * length_of_binary_data) * pi * (1 - pi)))
 
+    print("Run Test: " + str(p_value > 0.01))
     return p_value, (p_value > 0.01)
 
 def longest_one_block_test(binary_data: str):
@@ -173,16 +176,14 @@ def longest_one_block_test(binary_data: str):
                 number_of_blocks * pi_values[count])
 
     p_value = gammaincc(float(k / 2), float(xObs / 2))
-
+    
+    print("Longest Block: " + str(p_value > 0.01))
     return p_value, (p_value > 0.01)
 
 
 
 def onlineTest(binary_data: str):
-    print("Monobit: "+str(monobit_test(binary_data)))
-    print("Block: "+str(block_frequency_test(binary_data)))
-    print("Run: "+str(run_test(binary_data)))
-    print("Longest: "+str(longest_one_block_test(binary_data)))
+    return monobit_test(binary_data)[1] and block_frequency_test(binary_data)[1] and run_test(binary_data)[1] and longest_one_block_test(binary_data)[1]
 
 
 
