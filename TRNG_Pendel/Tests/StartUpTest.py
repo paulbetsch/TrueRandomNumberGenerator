@@ -2,6 +2,7 @@ from math import fabs as fabs
 from math import sqrt as sqrt
 from scipy import stats
 from scipy.special import erfc as erfc
+import logging
 
 """
     Example Run Implementation of function StartUpTest():
@@ -56,7 +57,7 @@ def __test_monobit(binaryString: str):
     p_value = erfc(fabs(sObs) / sqrt(2))
 
     # return a p_value and randomness result
-    print("Monobit: " + str(p_value >= 0.01))
+    logging.info("Monobit: " + str(p_value >= 0.01))
     return (p_value >= 0.01)
 
 
@@ -84,6 +85,6 @@ def __chi2_gof_test(binaryString: str):
 
     #print(f"Test statistic: {testStat:.2f}")
     #print(f"P-value: {pValue:.4f}")
-    print("Chi-Squared: " + str(pValue >= 0.01))
+    logging.info("Chi-Squared: " + str(pValue >= 0.01))
     # According to the BSI Standard PTG2 the test variable of the X2-Test must be less than 65.0 # TODO: Figure out which variable should be tested
     return pValue >= 0.01

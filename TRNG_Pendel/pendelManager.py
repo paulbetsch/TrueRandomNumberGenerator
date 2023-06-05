@@ -1,4 +1,5 @@
 import time
+import logging
 from ErrorEvent import ErrorEvent
 from multiprocessing import Process, Queue, Manager, Event
 from KameraRaspberryPi import ObjectTracker
@@ -9,8 +10,6 @@ import Tests.StartUpTest as startUp
 import Tests.OnlineTest as online
 import Tests.TotalFailureTest as toft
 
-# Wird von der REST-API geleitet
-__CONTROLLED_BY_API = False
 BsiInitTestsPassed = None
 __manager = None
 
@@ -123,7 +122,7 @@ class PendelManager:
                         if(online.onlineTest(bits)):
                             goodBytes += bits
                             failCounter = 0
-                            print("goodBytes:"  + str(len(goodBytes)))
+                            logging.debug("goodBytes:"  + str(len(goodBytes)))
                         elif(failCounter + 1 == 10):
                             # If the Tests fail ten times in a row, the probality of an error in the samplingprocess is very high.
                             # Therefore the generationprocess is stopped and the API will provide an statuscode providing further information                        elif(failCounter + 1 == 10):
@@ -167,23 +166,20 @@ def GetInstance():
 
 # Wir können feststellen ob der Manager direkt gestartet wird
 if __name__ == '__main__':
-    print("Executed when called directly")
+    logging.info("Executed when called directly")
     # Eventuell können wir hier eine Menüführung über CLI implementieren
-    __CONTROLLED_BY_API = False
     if(__manager == None):
         __manager = PendelManager()
 
     # For Testing:
     functional = __manager.checkFunctionality()
     if(functional):   
-        print("Functional") 
-        print(__manager.generateRandomBits(20, 100))
+        logging.debug("Functional") 
+        logging.info(__manager.generateRandomBits(20, 100))
     else:
-        print("Not Functional")
+        logging.debug("Not Functional")
 
 # oder ob er von der API aus aufgerufen wird.            
 else:
-    print("Executed when imported.")
-    __CONTROLLED_BY_API = True
     if(__manager == None):
         __manager = PendelManager()

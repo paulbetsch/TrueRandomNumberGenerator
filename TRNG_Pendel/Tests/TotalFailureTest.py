@@ -1,6 +1,7 @@
 from math import log as log
 from numpy import zeros as zeros
 from scipy.special import gammaincc as gammaincc
+import logging
 
 
 def TotalFailureTest(binary_data:str, verbose=False, pattern_length = 10):
@@ -49,13 +50,13 @@ def TotalFailureTest(binary_data:str, verbose=False, pattern_length = 10):
         p_value = gammaincc(pow(2, pattern_length - 1), xObs / 2.0)
 
         if verbose:
-            print('Approximate Entropy Test DEBUG BEGIN:')
-            print("\tLength of input:\t\t\t", length_of_binary_data)
-            print('\tLength of each block:\t\t', pattern_length)
-            print('\tApEn(m):\t\t\t\t\t', ape)
-            print('\txObs:\t\t\t\t\t\t', xObs)
-            print('\tP-Value:\t\t\t\t\t', p_value)
-            print('DEBUG END.')
+            logging.debug('Approximate Entropy Test DEBUG BEGIN:')
+            logging.debug("\tLength of input:\t\t\t", length_of_binary_data)
+            logging.debug('\tLength of each block:\t\t', pattern_length)
+            logging.debug('\tApEn(m):\t\t\t\t\t', ape)
+            logging.debug('\txObs:\t\t\t\t\t\t', xObs)
+            logging.debug('\tP-Value:\t\t\t\t\t', p_value)
+            logging.debug('DEBUG END.')
 
         return (p_value, (p_value >= 0.01))
 

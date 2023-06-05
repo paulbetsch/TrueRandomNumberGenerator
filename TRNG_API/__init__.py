@@ -47,7 +47,7 @@ class InitRandomNums(Resource):
         global TRNG_RUNNING
         response = ''
         if(TRNG_RUNNING):
-            response = make_response(jsonify({'description': 'system already running'}), 403)
+            response = make_response(jsonify({'description': 'system already running'}), 409)
         else:
             manager = pendelManager.GetInstance()
             t = threading.Thread(target=manager.checkFunctionality)
@@ -72,7 +72,7 @@ class ShutdownRandomNums(Resource):
             TRNG_RUNNING = False
             response = make_response(jsonify({'description': 'system shutdown'}), 200)
         else:
-            response = make_response(jsonify({'description': 'system already shutdown'}), 403)
+            response = make_response(jsonify({'description': 'system already shutdown'}), 409)
 
         response.headers['Access-Control-Allow-Origin'] = '*'
         return response
@@ -83,5 +83,4 @@ api.add_resource(InitRandomNums, '/randomNum/init')
 api.add_resource(ShutdownRandomNums, '/randomNum/shutdown')
 
 if __name__ == '__main__':
-
      app.run(port=5520)

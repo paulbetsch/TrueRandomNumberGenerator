@@ -1,6 +1,7 @@
 from ina219 import INA219
 from ina219 import DeviceRangeError
 import time
+import logging
 import RPi.GPIO as GPIO
 
 #SIZE OF THE BUILT IN RESISTOR
@@ -15,7 +16,7 @@ def read():
     ina.configure(ina.RANGE_32V)
 
     #Current OF THE LIFTING MAGNETE 
-    current = ina.current()*-1
+    current = ina.current()
     #print("current: " +str(current))
     
     #IF CUURENT LOWER 0.2 mA
@@ -23,7 +24,7 @@ def read():
         #RESET THE LIFTING MAGNETE
         GPIO.output(13,1)
         
-        print("Error: Magnet not working")
+        logging.debug("Error: Magnet not working")
         return False
        
     #RESET THE LIFTING MAGNETE
@@ -48,5 +49,5 @@ def CheckMagnetFunctionality():
         time.sleep(0.01)
         
         functional = read()
-        print("Magnet: " + str(functional))
+        logging.info("Magnet: " + str(functional))
         return functional
