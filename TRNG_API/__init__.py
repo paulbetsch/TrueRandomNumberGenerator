@@ -59,7 +59,7 @@ class InitRandomNums(Resource):
                 response = make_response(jsonify({'description': 'system initialized'}), 200)
             else:
                 TRNG_RUNNING = False
-                response = make_response(jsonify({'description': 'functionality not given; check hardware'}), 403)
+                response = make_response(jsonify({'description': 'functionality not given; check hardware'}), 500)
 
         response.headers['Access-Control-Allow-Origin'] = '*'
         return response
