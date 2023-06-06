@@ -42,7 +42,7 @@ def CheckCameraFunctionality():
             os.rmdir('tmp')
             functional = True
     except:
-        logging.debug('Passed: ' + str(passedTest) + ' out of ' + str(amountOfTests))
+        logging.error('Passed: ' + str(passedTest) + ' out of ' + str(amountOfTests))
         return False
     return functional
 

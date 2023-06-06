@@ -17,6 +17,22 @@ __manager = None
 class PendelManager:
     def __init__(self):
         self.manager = Manager()
+
+        # get named logger
+        logger = logging.getLogger(__name__)
+
+        # create handler
+        handler = logging.TimedRotatingFileHandler(filename='pendelManager.log', when='D', interval=1, backupCount=10, encoding='utf-8', delay=False)
+
+        # create formatter and add to handler
+        formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+
+        # add the handler to named logger
+        logger.addHandler(handler)
+
+        # set the logging level
+        logger.setLevel(logging.INFO)
         pass
     
     def __cut_string(self, string, position, length):
@@ -122,7 +138,7 @@ class PendelManager:
                         if(online.onlineTest(bits)):
                             goodBytes += bits
                             failCounter = 0
-                            logging.debug("goodBytes:"  + str(len(goodBytes)))
+                            logger.debug("goodBytes:"  + str(len(goodBytes)))
                         elif(failCounter + 1 == 10):
                             # If the Tests fail ten times in a row, the probality of an error in the samplingprocess is very high.
                             # Therefore the generationprocess is stopped and the API will provide an statuscode providing further information                        elif(failCounter + 1 == 10):
@@ -166,7 +182,6 @@ def GetInstance():
 
 # Wir können feststellen ob der Manager direkt gestartet wird
 if __name__ == '__main__':
-    logging.info("Executed when called directly")
     # Eventuell können wir hier eine Menüführung über CLI implementieren
     if(__manager == None):
         __manager = PendelManager()
@@ -174,10 +189,10 @@ if __name__ == '__main__':
     # For Testing:
     functional = __manager.checkFunctionality()
     if(functional):   
-        logging.debug("Functional") 
-        logging.info(__manager.generateRandomBits(20, 100))
+        logger.debug("Functional") 
+        logger.info(__manager.generateRandomBits(20, 100))
     else:
-        logging.debug("Not Functional")
+        logger.debug("Not Functional")
 
 # oder ob er von der API aus aufgerufen wird.            
 else:

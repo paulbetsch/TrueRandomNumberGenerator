@@ -26,4 +26,4 @@ This repository includes all scripts and files which we use to develop a True Ra
 - Lukas Siegle
 - Marina Göppel 
 - Carsten Michel
-- Stefan Kleinhenz Leiva
+-  Stefan Kleinhenz Leiva

@@ -51,6 +51,7 @@ class InitRandomNums(Resource):
         else:
             manager = pendelManager.GetInstance()
             t = threading.Thread(target=manager.checkFunctionality)
+            t.start()
             t.join(timeout=60)
             
             if(pendelManager.BsiInitTestsPassed):

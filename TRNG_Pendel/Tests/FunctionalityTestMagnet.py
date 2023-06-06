@@ -24,7 +24,7 @@ def read():
         #RESET THE LIFTING MAGNETE
         GPIO.output(13,1)
         
-        logging.debug("Error: Magnet not working")
+        logging.error("Error: Magnet not working")
         return False
        
     #RESET THE LIFTING MAGNETE
