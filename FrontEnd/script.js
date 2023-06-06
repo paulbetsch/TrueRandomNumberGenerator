@@ -11,8 +11,8 @@ $(document).ready(function () {
         $("#init-status").text("Initialized.");
       },
       error: function (jqXHR, textStatus, errorThrown) {
-        if (jqXHR.status === 403) $("#init-status").text("system already running.");
-        else $("#init-status").text("Failed to initialize.");
+        if (jqXHR.status === 403) $("#init-status").text(jqXHR.text + ", " +jqXHR.status);
+        else $("#init-status").text(jqXHR.text + ", " +jqXHR.status);
       },
     });
   });
@@ -23,10 +23,10 @@ $(document).ready(function () {
       url: baseUrl + "/randomNum/shutdown",
       type: "GET",
       success: function () {
-        $("#init-status").text("Standby mode.");
+        $("#init-status").text(jqXHR.text + ", " +jqXHR.status);
       },
       error: function (jqXHR, textStatus, errorThrown) {
-        $("#init-status").text("Failed to shutdown.");
+        $("#init-status").text(jqXHR.text + ", " +jqXHR.status);
       },
     });
   });
@@ -49,13 +49,13 @@ $(document).ready(function () {
       error: function (jqXHR, textStatus, errorThrown) {
         if (jqXHR.status === 500) {
           $("#init-status").text(
-            "System deliverd an empty array; check noise source."
+            jqXHR.text + ", " +jqXHR.status
           );
         } else if (jqXHR.status === 432) {
-          $("#init-status").text("System not ready; Initalize again.");
+          $("#init-status").text(jqXHR.text + ", " +jqXHR.status);
         } else {
           $("#init-status").text(
-            "API has not been started yet. " + errorThrown
+            jqXHR.text + ", " +jqXHR.status +", " + errorThrown
           );
         }
       },
