@@ -1,18 +1,33 @@
 /* The code $(document).ready(function () {}) is from jQuery and is executed when the DOM ist complety loaded */
 
 $(document).ready(function () {
+
+
+  $("#quantity-input, #numBits-input").on("input", function () {
+    this.value = this.value.replace(/[^0-9]/g, "");
+    if (this.value < 0) {
+      this.value = "";
+    }
+  });
+
   baseUrl = "http://localhost:5520/trng";
   // Sending a request to the API to initialize the random number generator when the button with the ID 'init-btn' is clicked
   $("#init-btn").click(function () {
     $.ajax({
       url: baseUrl + "/randomNum/init",
       type: "GET",
-      success: function () {
-        $("#init-status").text("Initialized.");
+      success: function (jqXHR) {
+        const json = jqXHR.responseText
+        const obj = JSON.parse(json);
+
+        $("#init-status").text(obj.description + ", Status: "+jqXHR.status);
       },
       error: function (jqXHR, textStatus, errorThrown) {
-        if (jqXHR.status === 403) $("#init-status").text(jqXHR.text + ", " +jqXHR.status);
-        else $("#init-status").text(jqXHR.text + ", " +jqXHR.status);
+        const json = jqXHR.responseText
+        const obj = JSON.parse(json);
+
+        if (jqXHR.status === 403) $("#init-status").text(obj.description + ", Status: "+jqXHR.status);
+        else $("#init-status").text(obj.description + ", Status: "+jqXHR.status);
       },
     });
   });
@@ -23,10 +38,14 @@ $(document).ready(function () {
       url: baseUrl + "/randomNum/shutdown",
       type: "GET",
       success: function () {
-        $("#init-status").text(jqXHR.text + ", " +jqXHR.status);
+        const json = jqXHR.responseText
+        const obj = JSON.parse(json);
+        $("#init-status").text(obj.description + ", Status: "+jqXHR.status);
       },
       error: function (jqXHR, textStatus, errorThrown) {
-        $("#init-status").text(jqXHR.text + ", " +jqXHR.status);
+        const json = jqXHR.responseText
+        const obj = JSON.parse(json);
+        $("#init-status").text(obj.description + ", Status: "+jqXHR.status);
       },
     });
   });
@@ -44,18 +63,22 @@ $(document).ready(function () {
         numBits: numBits,
       },
       success: function (response) {
+        const json = jqXHR.responseText
+        const obj = JSON.parse(json);
         $("#result").text(JSON.stringify(response));
       },
       error: function (jqXHR, textStatus, errorThrown) {
+        const json = jqXHR.responseText
+        const obj = JSON.parse(json);
         if (jqXHR.status === 500) {
           $("#init-status").text(
-            jqXHR.text + ", " +jqXHR.status
+            obj.description + ", Status: "+jqXHR.status
           );
         } else if (jqXHR.status === 432) {
-          $("#init-status").text(jqXHR.text + ", " +jqXHR.status);
+          $("#init-status").text(obj.description + ", Status: "+jqXHR.status);
         } else {
           $("#init-status").text(
-            jqXHR.text + ", " +jqXHR.status +", " + errorThrown
+            obj.description + ", Status: "+jqXHR.status + errorThrown
           );
         }
       },
