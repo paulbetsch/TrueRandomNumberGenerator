@@ -1,5 +1,9 @@
+import sys, os
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 import time
-import logging
+#import logging
 from ErrorEvent import ErrorEvent
 from multiprocessing import Process, Queue, Manager, Event
 from KameraRaspberryPi import ObjectTracker
@@ -19,20 +23,20 @@ class PendelManager:
         self.manager = Manager()
 
         # get named logger
-        logger = logging.getLogger(__name__)
+        #logger = logging.getLogger(__name__)
 
         # create handler
-        handler = logging.TimedRotatingFileHandler(filename='pendelManager.log', when='D', interval=1, backupCount=10, encoding='utf-8', delay=False)
+        #handler = logging.TimedRotatingFileHandler(filename='pendelManager.log', when='D', interval=1, backupCount=10, encoding='utf-8', delay=False)
 
         # create formatter and add to handler
-        formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        handler.setFormatter(formatter)
+        #formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        #handler.setFormatter(formatter)
 
         # add the handler to named logger
-        logger.addHandler(handler)
+        #logger.addHandler(handler)
 
         # set the logging level
-        logger.setLevel(logging.INFO)
+        #logger.setLevel(logging.INFO)
         pass
     
     def __cut_string(self, string, position, length):
@@ -89,7 +93,7 @@ class PendelManager:
         # Only functional if all components function correctly
         if(cameraFunc.CheckCameraFunctionality() and engineFunc.CheckEngineFunctionality() and magnetFunc.CheckMagnetFunctionality()):
             # Check if noise source works correctly
-            hexNums = self.generateRandomBits(18, 100)
+            hexNums = self.generateRandomBits(10, 100)
             #print(hexNums)
             # convert hexNums to binary
             binaryData = self.__hexArrayToBinaryString(hexNums)
@@ -141,6 +145,7 @@ class PendelManager:
                             # It is very likely that the next 1024 bits are also randoms.
                             # Therefore we will take the next 1024 and prepare it for the output
                             goodBytes += bits
+                            print(str(len(goodBytes)))
                             checkedBefore = False
                         elif(online.onlineTest(bits)):
                             checkedBefore = True
