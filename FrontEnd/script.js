@@ -63,9 +63,9 @@ $(document).ready(function () {
         numBits: numBits,
       },
       success: function (response) {
-        const json = jqXHR.responseText
-        const obj = JSON.parse(json);
-        $("#result").text(JSON.stringify(response));
+        var formattedJSON = JSON.stringify(response, null, 2); // Hier wird der zusätzliche Parameter `2` verwendet, um den Einzug auf 2 Leerzeichen festzulegen
+        formattedJSON = formattedJSON.replace(/\n/g, "<br>"); // Ersetzt Zeilenumbrüche durch HTML-Break-Tags
+        $("#result").html(formattedJSON); // Verwendet html() statt text(), um die Zeilenumbrüche zu berücksichtigen
       },
       error: function (jqXHR, textStatus, errorThrown) {
         const json = jqXHR.responseText
