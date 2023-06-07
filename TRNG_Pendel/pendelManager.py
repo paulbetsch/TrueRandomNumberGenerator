@@ -1,4 +1,9 @@
+import sys, os
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 import time
+#import logging
 from ErrorEvent import ErrorEvent
 from multiprocessing import Process, Queue, Manager, Event
 from KameraRaspberryPi import ObjectTracker
@@ -9,8 +14,6 @@ import Tests.StartUpTest as startUp
 import Tests.OnlineTest as online
 import Tests.TotalFailureTest as toft
 
-# Wird von der REST-API geleitet
-__CONTROLLED_BY_API = False
 BsiInitTestsPassed = None
 __manager = None
 
@@ -18,6 +21,22 @@ __manager = None
 class PendelManager:
     def __init__(self):
         self.manager = Manager()
+
+        # get named logger
+        #logger = logging.getLogger(__name__)
+
+        # create handler
+        #handler = logging.TimedRotatingFileHandler(filename='pendelManager.log', when='D', interval=1, backupCount=10, encoding='utf-8', delay=False)
+
+        # create formatter and add to handler
+        #formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        #handler.setFormatter(formatter)
+
+        # add the handler to named logger
+        #logger.addHandler(handler)
+
+        # set the logging level
+        #logger.setLevel(logging.INFO)
         pass
     
     def __cut_string(self, string, position, length):
@@ -74,7 +93,7 @@ class PendelManager:
         # Only functional if all components function correctly
         if(cameraFunc.CheckCameraFunctionality() and engineFunc.CheckEngineFunctionality() and magnetFunc.CheckMagnetFunctionality()):
             # Check if noise source works correctly
-            hexNums = self.generateRandomBits(18, 100)
+            hexNums = self.generateRandomBits(10, 100)
             #print(hexNums)
             # convert hexNums to binary
             binaryData = self.__hexArrayToBinaryString(hexNums)
@@ -126,6 +145,7 @@ class PendelManager:
                             # It is very likely that the next 1024 bits are also randoms.
                             # Therefore we will take the next 1024 and prepare it for the output
                             goodBytes += bits
+                            print(str(len(goodBytes)))
                             checkedBefore = False
                         elif(online.onlineTest(bits)):
                             checkedBefore = True
@@ -173,9 +193,7 @@ def GetInstance():
 
 # Wir können feststellen ob der Manager direkt gestartet wird
 if __name__ == '__main__':
-    print("Executed when called directly")
     # Eventuell können wir hier eine Menüführung über CLI implementieren
-    __CONTROLLED_BY_API = False
     if(__manager == None):
         __manager = PendelManager()
 
@@ -189,7 +207,5 @@ if __name__ == '__main__':
 
 # oder ob er von der API aus aufgerufen wird.            
 else:
-    print("Executed when imported.")
-    __CONTROLLED_BY_API = True
     if(__manager == None):
         __manager = PendelManager()
