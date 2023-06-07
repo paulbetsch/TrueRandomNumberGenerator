@@ -13,12 +13,13 @@ This repository includes all scripts and files which we use to develop a True Ra
 - 12V electric motor
 - 24V electric lifiting magnet
 - Relay which can control up to 24V
-- 
+- Jumper cables
+- Power sources for motor, magnet and Raspberry Pi
 
 ## Requirements for Installation
 - \>= [Python 3.9](https://www.python.org/downloads/release/python-390/)
 - Any IDE you prefer, e. g. PyCharm, VS Code, Python IDE
-- Git CLI to get the Code onto the Raspberry Pi
+- Git CLI to get the code onto the Raspberry Pi
 
 ## Architechture
 

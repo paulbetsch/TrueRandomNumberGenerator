@@ -120,6 +120,7 @@ class PendelManager:
             bits = ""
             goodBytes = ""
             failCounter = 0
+            checkedBefore = False
 
             # As long as the objectTracker has no errors, we can sample further data
             # The ObjectTracker.py is only allowed to stop the Generationprocess if any errors happen.
@@ -134,18 +135,23 @@ class PendelManager:
                         bits += randomValues.get()
                     # 128 bytes = 1024 bits have been transfered to the pendelManager, the quality of the bits is checked with the 
                     # Tests explaineqqqd in PTG.2. provided by the BSI in Germany.
-                    if(len(bits) >= 1024):                      
-                        if(online.onlineTest(bits)):
+                    if(len(bits) >= 1024): 
+                        if(checkedBefore):
+                            # If the random bits out of the iteration before have passed the Online Tests.
+                            # It is very likely that the next 1024 bits are also randoms.
+                            # Therefore we will take the next 1024 and prepare it for the output
                             goodBytes += bits
+                            checkedBefore = False
+                        elif(online.onlineTest(bits)):
+                            checkedBefore = True
                             failCounter = 0
-                            logger.debug("goodBytes:"  + str(len(goodBytes)))
-                        elif(failCounter + 1 == 10):
+                        elif(failCounter < 3):
+                            failCounter += 1
+                        else:
                             # If the Tests fail ten times in a row, the probality of an error in the samplingprocess is very high.
                             # Therefore the generationprocess is stopped and the API will provide an statuscode providing further information                        elif(failCounter + 1 == 10):
-                            errorEvent.setErrorDescription("Online Test failed 10 Times in a row")
+                            errorEvent.setErrorDescription("Online Test has failed 3 Times in a row")
                             errorEvent.setEvent()
-                        else:
-                            failCounter += 1
                         bits = ""
 
                     # If the requested amount of bits has been reached, the generation process will be stopped and the stopEvent will be triggerd
@@ -189,10 +195,10 @@ if __name__ == '__main__':
     # For Testing:
     functional = __manager.checkFunctionality()
     if(functional):   
-        logger.debug("Functional") 
-        logger.info(__manager.generateRandomBits(20, 100))
+        print("Functional") 
+        print(__manager.generateRandomBits(20, 100))
     else:
-        logger.debug("Not Functional")
+        print("Not Functional")
 
 # oder ob er von der API aus aufgerufen wird.            
 else:
