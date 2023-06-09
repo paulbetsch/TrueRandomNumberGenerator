@@ -40,8 +40,8 @@ class GetRandomNums(Resource):
             try:
                 result = manager.generateRandomBits(quantity, numBits)
                 response = make_response(result, 200)
-            except Exception:
-                response = make_response(jsonify({'description': 'data generation failed; check noise source'}), 500)
+            except Exception as ex:
+                response = make_response(jsonify({'description': ex}), 500)
             
         return response
 
@@ -86,4 +86,6 @@ api.add_resource(InitRandomNums, '/randomNum/init')
 api.add_resource(ShutdownRandomNums, '/randomNum/shutdown')
 
 if __name__ == '__main__':
+     # host 0.0.0.0 implies that the server is hosted on every interfaces
+     # port use a custom port for automated scans
      app.run(host='0.0.0.0',port=5520)

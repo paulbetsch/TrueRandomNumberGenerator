@@ -8,7 +8,6 @@ from ErrorEvent import ErrorEvent
 from multiprocessing import Process, Queue, Manager, Event
 from KameraRaspberryPi import ObjectTracker
 import Tests.FunctionalityTestCamera as cameraFunc
-import Tests.FunctionalityTestEngine as engineFunc
 import Tests.FunctionalityTestMagnet as magnetFunc
 import Tests.StartUpTest as startUp
 import Tests.OnlineTest as online
@@ -91,7 +90,7 @@ class PendelManager:
         BsiInitTestsPassed = False
         # Check if all components are ready to work
         # Only functional if all components function correctly
-        if(cameraFunc.CheckCameraFunctionality() and engineFunc.CheckEngineFunctionality() and magnetFunc.CheckMagnetFunctionality()):
+        if(cameraFunc.CheckCameraFunctionality() and magnetFunc.CheckMagnetFunctionality()):
             # Check if noise source works correctly
             hexNums = self.generateRandomBits(10, 100)
             #print(hexNums)
@@ -154,7 +153,7 @@ class PendelManager:
                             failCounter += 1
                         else:
                             # If the Tests fail ten times in a row, the probality of an error in the samplingprocess is very high.
-                            # Therefore the generationprocess is stopped and the API will provide an statuscode providing further information                        elif(failCounter + 1 == 10):
+                            # Therefore the generationprocess is stopped and the API will provide an statuscode providing further information
                             errorEvent.setErrorDescription("Online Test has failed 3 Times in a row")
                             errorEvent.setEvent()
                         bits = ""
@@ -171,10 +170,10 @@ class PendelManager:
             #prepare goodByts for return (split into quantitty times numBits and change to hex numbers)
             result = self.__prepareBinaryStringForReturn(goodBytes, quantity, numBits)
 
-
             # TODO: errorEvent handling
             if(errorEvent.isEventSet()):
-                raise Exception("An Error Occured: Pendullum not moving.")
+                stopEvent.set()
+                raise Exception(errorEvent)
             else:
                 pass
 
