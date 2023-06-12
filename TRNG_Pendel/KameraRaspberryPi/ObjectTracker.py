@@ -21,7 +21,7 @@ UPPER_BLACK = (255, 255, 55)
 
 #Minimale Fläche bei der schwarze Pixel als schwarzer Punkte des Pendels erkannt werden
 MIN_AREA = 20
-MAX_AREA = 150000
+MAX_AREA = 5000
 BIT_COUNTER = 0
 
 X_MIDDLE = 324
@@ -167,21 +167,21 @@ def Capture(stopEvent, errorEvent, sharedList):
                 else:
                     if MAX_AREA < area:
                         error("Camera disturbance, remove disturbing Objects")
-                cv2.imshow("Frame", frame)
+                #cv2.imshow("Frame", frame)
 
         #Pausierung des programms 
-        if cv2.waitKey(1) & 0xFF == ord('b'):
-            print("Pause")
-            while True:
-                if cv2.waitKey(1) & 0xFF == ord('b'):
-                    print("Go")
-                    break       
+        #if cv2.waitKey(1) & 0xFF == ord('b'):
+         #   print("Pause")
+          #  while True:
+           #     if cv2.waitKey(1) & 0xFF == ord('b'):
+            #        print("Go")
+             #       break       
                 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            GenerateData(sharedList)
-            logging.info(f"Total time running: {str(int((time.time() - START_TIME) / 60))} minutes - {BIT_COUNTER} Bits")
-            logging.info(f"Generated {str(BIT_COUNTER / (time.time() - START_TIME))} Bits per second on average")
-            break
+        #if cv2.waitKey(1) & 0xFF == ord('q'):
+         #   GenerateData(sharedList)
+          #  logging.info(f"Total time running: {str(int((time.time() - START_TIME) / 60))} minutes - {BIT_COUNTER} Bits")
+           # logging.info(f"Generated {str(BIT_COUNTER / (time.time() - START_TIME))} Bits per second on average")
+            #break
 
     cap.release()
     cv2.destroyAllWindows()

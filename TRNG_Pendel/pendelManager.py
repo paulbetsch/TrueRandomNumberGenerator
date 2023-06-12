@@ -127,10 +127,9 @@ class PendelManager:
                             # It is very likely that the next 1024 bits are also randoms.
                             # Therefore we will take the next 1024 and prepare it for the output
                             goodBytes += bits
-                            print("goodByts" + str(len(goodBytes)))
+                            print("goodBits" + str(len(goodBytes)))
                             checkedBefore = False
                         elif(online.onlineTest(bits)):
-                            print("online test passed")
                             checkedBefore = True
                             failCounter = 0
                         elif(failCounter < 3):
