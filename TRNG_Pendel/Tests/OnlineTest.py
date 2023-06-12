@@ -4,6 +4,7 @@ from math import floor as floor
 from math import sqrt as sqrt
 from scipy.special import erfc as erfc
 from scipy.special import gammaincc as gammaincc
+import logging
 
 def monobit_test(binary_data: str):
 
@@ -27,7 +28,7 @@ def monobit_test(binary_data: str):
     p_value = erfc(fabs(sObs) / sqrt(2))
 
     # return a p_value and randomness result
-    print("Monobit: " + str(p_value >= 0.01))
+    logging.info("Monobit: " + str(p_value >= 0.01))
     return p_value, (p_value >= 0.01)
 
 def block_frequency_test(binary_data: str, block_size=128):
@@ -75,7 +76,7 @@ def block_frequency_test(binary_data: str, block_size=128):
     # Compute P-Value
     p_value = gammaincc(number_of_blocks / 2, result / 2)
 
-    print("Block Frequency: " + str(p_value >= 0.01))
+    logging.info("Block Frequency: " + str(p_value >= 0.01))
     return p_value, (p_value >= 0.01)
 
 def run_test(binary_data: str):
@@ -105,7 +106,7 @@ def run_test(binary_data: str):
         # Step 4 - Compute p_value = erfc((|vObs − 2nπ * (1−π)|)/(2 * sqrt(2n) * π * (1−π)))
         p_value = erfc(abs(vObs - (2 * length_of_binary_data * pi * (1 - pi))) / (2 * sqrt(2 * length_of_binary_data) * pi * (1 - pi)))
 
-    print("Run Test: " + str(p_value > 0.01))
+    logging.info("Run Test: " + str(p_value > 0.01))
     return p_value, (p_value > 0.01)
 
 def longest_one_block_test(binary_data: str):
@@ -177,7 +178,7 @@ def longest_one_block_test(binary_data: str):
 
     p_value = gammaincc(float(k / 2), float(xObs / 2))
     
-    print("Longest Block: " + str(p_value > 0.01))
+    logging.info("Longest Block: " + str(p_value > 0.01))
     return p_value, (p_value > 0.01)
 
 

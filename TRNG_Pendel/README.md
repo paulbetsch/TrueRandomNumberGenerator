@@ -4,7 +4,11 @@
 This Folder contains a few Python Scripts which are used to manage the whole TRNG.
 
 ## Requirements
-- 
+- setuptools \>= 67.8.0
+- scipy \>= 1.8.1
+- numpy \>= 1.24.2
+- opencv-python \>= 4.5.3.56
+- rpi.gpio \>= 0.7.0
 
 ## Scripts
 - __init.py__: Old script is not used anymore.

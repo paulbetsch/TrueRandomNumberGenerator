@@ -1,16 +1,21 @@
+import sys, os
 import threading
 from flask import Flask, request, jsonify, make_response
 from flask_restful import Resource, Api
 from flask_cors import CORS
-from ..TRNG_Pendel import pendelManager
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from TRNG_Pendel import pendelManager
 
 # Determines if Generating Random Numbers is possible
 TRNG_RUNNING = False
 
 # App configs (TODO: change to WSGI before Production)
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*":{"origins":"*"}})
 #app.config['CORS_HEADERS'] = 'Content-Type'
+
 api = Api(app)
 api.prefix = '/trng'
 
@@ -38,7 +43,6 @@ class GetRandomNums(Resource):
             except Exception:
                 response = make_response(jsonify({'description': 'data generation failed; check noise source'}), 500)
             
-        response.headers['Access-Control-Allow-Origin'] = '*'
         return response
 
 # This endpoint initializes the TRNG and ensures that the endpoint GetRandomNums works.
@@ -47,10 +51,11 @@ class InitRandomNums(Resource):
         global TRNG_RUNNING
         response = ''
         if(TRNG_RUNNING):
-            response = make_response(jsonify({'description': 'system already running'}), 403)
+            response = make_response(jsonify({'description': 'system already running'}), 409)
         else:
             manager = pendelManager.GetInstance()
             t = threading.Thread(target=manager.checkFunctionality)
+            t.start()
             t.join(timeout=60)
             
             if(pendelManager.BsiInitTestsPassed):
@@ -58,9 +63,8 @@ class InitRandomNums(Resource):
                 response = make_response(jsonify({'description': 'system initialized'}), 200)
             else:
                 TRNG_RUNNING = False
-                response = make_response(jsonify({'description': 'functionality not given; check hardware'}), 403)
+                response = make_response(jsonify({'description': 'functionality not given; check hardware'}), 500)
 
-        response.headers['Access-Control-Allow-Origin'] = '*'
         return response
 
 # This endpoint shuts down the TRNG
@@ -72,9 +76,8 @@ class ShutdownRandomNums(Resource):
             TRNG_RUNNING = False
             response = make_response(jsonify({'description': 'system shutdown'}), 200)
         else:
-            response = make_response(jsonify({'description': 'system already shutdown'}), 403)
+            response = make_response(jsonify({'description': 'system already shutdown'}), 409)
 
-        response.headers['Access-Control-Allow-Origin'] = '*'
         return response
 
 
@@ -83,5 +86,4 @@ api.add_resource(InitRandomNums, '/randomNum/init')
 api.add_resource(ShutdownRandomNums, '/randomNum/shutdown')
 
 if __name__ == '__main__':
-
-     app.run(port=5520)
+     app.run(host='0.0.0.0',port=5520)
