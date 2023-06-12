@@ -33,5 +33,4 @@ def CheckMagnetFunctionality():
     if current>=0.2:
         functional = True
     logging.info("Magnet working: " + str(functional))
-
     return functional
