@@ -5,7 +5,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import time
 #import logging
 from ErrorEvent import ErrorEvent
-from multiprocessing import Process, Queue, Manager, Event
+from multiprocessing import Process, Queue, Manager, Event, RawArray
+from ctypes import c_char
 from KameraRaspberryPi import ObjectTracker
 import Tests.FunctionalityTestCamera as cameraFunc
 import Tests.FunctionalityTestMagnet as magnetFunc
@@ -20,22 +21,6 @@ __manager = None
 class PendelManager:
     def __init__(self):
         self.manager = Manager()
-
-        # get named logger
-        #logger = logging.getLogger(__name__)
-
-        # create handler
-        #handler = logging.TimedRotatingFileHandler(filename='pendelManager.log', when='D', interval=1, backupCount=10, encoding='utf-8', delay=False)
-
-        # create formatter and add to handler
-        #formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        #handler.setFormatter(formatter)
-
-        # add the handler to named logger
-        #logger.addHandler(handler)
-
-        # set the logging level
-        #logger.setLevel(logging.INFO)
         pass
     
     def __cut_string(self, string, position, length):
@@ -113,7 +98,7 @@ class PendelManager:
             # Shared Memory for Random Bits
             randomValues = Queue()
             stopEvent = Event()
-            errorEvent = ErrorEvent()
+            errorEvent = ErrorEvent(RawArray(c_char, 255))
 
             # Start the generation of random values
             videoProc = Process(target=ObjectTracker.CapturePendelum, args=(stopEvent, errorEvent, randomValues))
@@ -130,30 +115,29 @@ class PendelManager:
             while not errorEvent.isEventSet():
 
                 # If eight times a byte or more are in the Queue we want to sample them
-                # TODO: maybe set the transfer rate to the startsize of the Online Tests
-                # TODO: check if bits as a string works
                 if(randomValues.qsize() >= 8):
                     # Transfer eight objects over multiprocess communication from the ObjectTracker.py to pendelManager.py
                     for i in range(0, 8):
                         bits += randomValues.get()
                     # 128 bytes = 1024 bits have been transfered to the pendelManager, the quality of the bits is checked with the 
-                    # Tests explaineqqqd in PTG.2. provided by the BSI in Germany.
+                    # Tests explained in PTG.2. provided by the BSI in Germany.
                     if(len(bits) >= 1024): 
                         if(checkedBefore):
                             # If the random bits out of the iteration before have passed the Online Tests.
                             # It is very likely that the next 1024 bits are also randoms.
                             # Therefore we will take the next 1024 and prepare it for the output
                             goodBytes += bits
-                            print(str(len(goodBytes)))
+                            print("goodByts" + str(len(goodBytes)))
                             checkedBefore = False
                         elif(online.onlineTest(bits)):
+                            print("online test passed")
                             checkedBefore = True
                             failCounter = 0
                         elif(failCounter < 3):
                             failCounter += 1
                         else:
                             # If the Tests fail ten times in a row, the probality of an error in the samplingprocess is very high.
-                            # Therefore the generationprocess is stopped and the API will provide an statuscode providing further information
+                            # Therefore the generationprocess is stopped and the API will provide an statuscode providing further information                        elif(failCounter + 1 == 10):
                             errorEvent.setErrorDescription("Online Test has failed 3 Times in a row")
                             errorEvent.setEvent()
                         bits = ""
@@ -167,15 +151,15 @@ class PendelManager:
                     # polling rate at 0.1 seconds for main process
                     time.sleep(0.1)
             
-            #prepare goodByts for return (split into quantitty times numBits and change to hex numbers)
-            result = self.__prepareBinaryStringForReturn(goodBytes, quantity, numBits)
-
             # TODO: errorEvent handling
             if(errorEvent.isEventSet()):
                 stopEvent.set()
-                raise Exception(errorEvent)
+                raise Exception(errorEvent.getErrorDescription())
             else:
                 pass
+
+            #prepare goodByts for return (split into quantitty times numBits and change to hex numbers)
+            result = self.__prepareBinaryStringForReturn(goodBytes, quantity, numBits)
 
             # End Process
             videoProc.terminate()
@@ -200,7 +184,7 @@ if __name__ == '__main__':
     functional = __manager.checkFunctionality()
     if(functional):   
         print("Functional") 
-        print(__manager.generateRandomBits(20, 100))
+        print(__manager.generateRandomBits(100, 5000))
     else:
         print("Not Functional")
 
