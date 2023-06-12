@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 from time import sleep    
 import time
 
+
 # Diese Methode startet den Elektromotor und lässt ihn für eine bestimmte Zeit (durationRunning) laufen
 # Der Zweite Parameter ist die Pause, zu dem nächsten Aufruf.
 def StartEngine(durationRunning, timeToWait):
@@ -37,4 +38,5 @@ def StopEngine():
     # Unterbrechung des Stromflusses im Relay für den Motor
     GPIO.output(6,1)   
     # Unterbrechung des Stromflusses im Relay für den Hubmagnet   
-    GPIO.output(13,1)
+    GPIO.output(13,0)
+

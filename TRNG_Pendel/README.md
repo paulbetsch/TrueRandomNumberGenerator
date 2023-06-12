@@ -11,7 +11,7 @@ This Folder contains a few Python Scripts which are used to manage the whole TRN
 - rpi.gpio \>= 0.7.0
 
 ## Scripts
-- __init.py__: Old script is not used anymore.
+- __init.py__: Old script is not used anymore. But necessary for import this folder as a module
 - __DataBuffer__: Used to store random generated Bits.
     - The pendelManager will store random Bits as a buffer, for requests with a big amount of randomnumbers.
 - __pendelManager.py__: This script handles all tests and the generation of Random Numbers.

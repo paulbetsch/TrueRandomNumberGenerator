@@ -1,10 +1,10 @@
-from multiprocessing import Event
+from multiprocessing import Event, Value
 
 class ErrorEvent():
-    def __init__ (self):
+    def __init__ (self, array):
         super().__init__()
         self.__event = Event()
-        self.__description = ""
+        self.__description = array
     
     def setEvent(self):
         self.__event.set()
@@ -15,8 +15,18 @@ class ErrorEvent():
     def isEventSet(self):
         return self.__event.is_set()
     
-    def setErrorDescription(self, errorDescription: str):
-        self.__description = errorDescription
+    def setErrorDescription(self, errorDescription):
+        i = 0
+        for c in errorDescription:
+            self.__description[i] = ord(c)
+            i += 1
+        self.__description[i] = 0
 
     def getErrorDescription(self):
-        return self.__description
+        result = ""
+        for i in range(0, 255):
+            if(ord(self.__description[i]) == 0):
+                break
+            result += chr(ord(self.__description[i]))
+        
+        return result
