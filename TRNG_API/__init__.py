@@ -43,7 +43,13 @@ class GetRandomNums(Resource):
             # Call generation from pendelManager
             try:
                 result = manager.generateRandomBits(quantity, numBits)
-                response = make_response(result, 200)
+                
+                data = {
+                'description': 'successful operation; HEX-encoded bit arrays (with leading zeros if required)',
+                'randomBits': result
+                }
+
+                response = make_response(jsonify(data), 200)
             except Exception:
                 response = make_response(jsonify({'description': 'data generation failed; check noise source'}), 500)
             
@@ -64,10 +70,14 @@ class InitRandomNums(Resource):
             
             if(pendelManager.BsiInitTestsPassed):
                 TRNG_RUNNING = True
-                response = make_response(jsonify({'description': 'system initialized'}), 200)
-            else:
+                response = make_response(jsonify({'description': 'successful operation; random number generator is ready and random numbers can be requested'}), 200)
+            elif(not pendelManager.BsiInitTestsPassed):
                 TRNG_RUNNING = False
                 response = make_response(jsonify({'description': 'functionality not given; check hardware'}), 500)
+            else:
+                TRNG_RUNNING = False
+                response = make_response(jsonify({'description': 'unable to initialize the random number generator within a timeout of 60 seconds'}), 555)
+
 
         return response
 
@@ -78,9 +88,9 @@ class ShutdownRandomNums(Resource):
         response = ''
         if(TRNG_RUNNING):
             TRNG_RUNNING = False
-            response = make_response(jsonify({'description': 'system shutdown'}), 200)
+            response = make_response(jsonify({'description': 'successful operation; random number generator has been set to \'standby mode\''}), 200)
         else:
-            response = make_response(jsonify({'description': 'system already shutdown'}), 409)
+            response = make_response(jsonify({'description': 'system already in \'standby mode\''}), 409)
 
         return response
 
