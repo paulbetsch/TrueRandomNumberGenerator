@@ -151,7 +151,7 @@ class PendelManager:
                     # polling rate at 0.1 seconds for main process
                     time.sleep(0.1)
             
-            # TODO: errorEvent handling
+            # ErrorEvent handling
             if(errorEvent.isEventSet()):
                 stopEvent.set()
                 raise Exception(errorEvent.getErrorDescription())
