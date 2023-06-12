@@ -14,8 +14,6 @@ def StartEngine(durationRunning, timeToWait):
     GPIO.setup(6, GPIO.OUT)  
     GPIO.setup(13, GPIO.OUT)  
     
-    now = time.time()
-    
     GPIO.output(6,0)
     GPIO.output(13,0)
     # Sleeps for the provided amount of time. While sleeping the motor is running
@@ -24,4 +22,3 @@ def StartEngine(durationRunning, timeToWait):
     # Break the circuit for the relay modules for electric motor & lifting magnet
     GPIO.output(6,1)   
     GPIO.output(13,1) 
-

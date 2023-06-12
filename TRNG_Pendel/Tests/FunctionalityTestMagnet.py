@@ -1,5 +1,3 @@
-from ina219 import INA219
-from ina219 import DeviceRangeError
 import time
 import logging
 import RPi.GPIO as GPIO
@@ -35,5 +33,4 @@ def CheckMagnetFunctionality():
     if current>=0.2:
         functional = True
     logging.info("Magnet working: " + str(functional))
-
     return functional

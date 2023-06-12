@@ -11,7 +11,7 @@ from TRNG_Pendel import pendelManager
 # Determines if Generating Random Numbers is possible
 TRNG_RUNNING = False
 
-# App configs (TODO: change to WSGI before Production)
+# App configs
 app = Flask(__name__)
 CORS(app, resources={r"/*":{"origins":"*"}})
 #app.config['CORS_HEADERS'] = 'Content-Type'
@@ -50,8 +50,8 @@ class GetRandomNums(Resource):
                 }
 
                 response = make_response(jsonify(data), 200)
-            except Exception:
-                response = make_response(jsonify({'description': 'data generation failed; check noise source'}), 500)
+            except Exception as ex:
+                response = make_response(jsonify({'description': str(ex)}), 500)
             
         return response
 
@@ -63,10 +63,14 @@ class InitRandomNums(Resource):
         if(TRNG_RUNNING):
             response = make_response(jsonify({'description': 'system already running'}), 409)
         else:
-            manager = pendelManager.GetInstance()
-            t = threading.Thread(target=manager.checkFunctionality)
-            t.start()
-            t.join(timeout=60)
+            try:
+                manager = pendelManager.GetInstance()
+                t = threading.Thread(target=manager.checkFunctionality)
+                t.start()
+                t.join(timeout=60)
+            except Exception as ex:
+                TRNG_RUNNING = False
+                response = make_response(jsonify({'description': str(ex)}), 500)
             
             if(pendelManager.BsiInitTestsPassed):
                 TRNG_RUNNING = True
