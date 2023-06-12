@@ -2,41 +2,23 @@ import RPi.GPIO as GPIO
 from time import sleep    
 import time
 
-
-# Diese Methode startet den Elektromotor und lässt ihn für eine bestimmte Zeit (durationRunning) laufen
-# Der Zweite Parameter ist die Pause, zu dem nächsten Aufruf.
+# This methode allows to control the electric motor and the lifting magnet to power the pendulum.
+# durationRunning: Time the motor and lifting magnet should run
 def StartEngine(durationRunning, timeToWait):
-    # debug option
     GPIO.setwarnings(False)
-    
-    # Nummerierung der GPIO Pins nach Standard
     GPIO.setmode(GPIO.BCM) 
     
-    # Pin für die Motorsteuerung
+    # Configure Pin 6 & 13 as output that we can send digital 1 and 0 over this pins.
+    # Pin 6 is connected to the relay and can toggle the circuit for the electric motor
+    # Pin 13 toggles the circuit for the lifting magnet
     GPIO.setup(6, GPIO.OUT)  
-    # Pin für den Hubmagnet
     GPIO.setup(13, GPIO.OUT)  
     
-    # Die aktuelle Zeit
-    now = time.time()
-    
-    while now > time.time()-durationRunning:
-        # Ermöglicht den Stromfluss im Relay für den Motor
-        GPIO.output(6,0)
-        # Ermöglicht den Stromfluss im Relay fü den Hubmagnet
-        GPIO.output(13,0)
-    
-    # Unterbrechung des Stromflusses im Relay für den Motor
-    GPIO.output(6,1)   
-    # Unterbrechung des Stromflusses im Relay für den Hubmagnet   
-    GPIO.output(13,1) 
-    sleep(timeToWait)
-    # GPIO.cleanup()
-
-# Diese Methode stoppt den Motor
-def StopEngine():
-    # Unterbrechung des Stromflusses im Relay für den Motor
-    GPIO.output(6,1)   
-    # Unterbrechung des Stromflusses im Relay für den Hubmagnet   
+    GPIO.output(6,0)
     GPIO.output(13,0)
-
+    # Sleeps for the provided amount of time. While sleeping the motor is running
+    sleep(durationRunning) 
+    
+    # Break the circuit for the relay modules for electric motor & lifting magnet
+    GPIO.output(6,1)   
+    GPIO.output(13,1) 
