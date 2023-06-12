@@ -176,7 +176,6 @@ def GetInstance():
 
 # Wir können feststellen ob der Manager direkt gestartet wird
 if __name__ == '__main__':
-    # Eventuell können wir hier eine Menüführung über CLI implementieren
     if(__manager == None):
         __manager = PendelManager()
 
