@@ -13,7 +13,7 @@ TRNG_RUNNING = False
 
 # App configs
 app = Flask(__name__)
-CORS(app, resources={r"/*":{"origins":"*"}})
+CORS(app, supports_credentials=True, resources={r"/*":{"origins":"*"}})
 #app.config['CORS_HEADERS'] = 'Content-Type'
 
 api = Api(app)
@@ -67,21 +67,21 @@ class InitRandomNums(Resource):
                 manager = pendelManager.GetInstance()
                 t = threading.Thread(target=manager.checkFunctionality)
                 t.start()
-                t.join(timeout=60)
+                t.join(timeout=59)
             except Exception as ex:
                 TRNG_RUNNING = False
                 response = make_response(jsonify({'description': str(ex)}), 500)
-            
+                return response
+		
             if(pendelManager.BsiInitTestsPassed):
                 TRNG_RUNNING = True
                 response = make_response(jsonify({'description': 'successful operation; random number generator is ready and random numbers can be requested'}), 200)
+            elif(t.is_alive()):
+                TRNG_RUNNING = False
+                response = make_response(jsonify({'description': 'unable to initialize the random number generator within a timeout of 60 seconds'}), 555)
             elif(not pendelManager.BsiInitTestsPassed):
                 TRNG_RUNNING = False
                 response = make_response(jsonify({'description': 'functionality not given; check hardware'}), 500)
-            else:
-                TRNG_RUNNING = False
-                response = make_response(jsonify({'description': 'unable to initialize the random number generator within a timeout of 60 seconds'}), 555)
-
 
         return response
 
@@ -104,4 +104,4 @@ api.add_resource(InitRandomNums, '/randomNum/init')
 api.add_resource(ShutdownRandomNums, '/randomNum/shutdown')
 
 if __name__ == '__main__':
-     app.run(host='0.0.0.0',port=5520)
+     app.run(host='172.16.78.60', port=5520, ssl_context=('/var/certs/cert-connect.pem', '/var/certs/cert-connect-key.pem'))

@@ -106,10 +106,11 @@ form input[type="number"] {
   }
 } 
 body {
-  overflow: hidden;
+  overflow:auto;
 }
 
 #snow-container {
+  z-index: -1;
   position: absolute;
   top: 0;
   left: 0;
@@ -117,6 +118,7 @@ body {
   height: 100%;
   display: none;
   flex-direction: column;
+  overflow: hidden;
   align-items: center;
   justify-content: flex-start;
   pointer-events: none;
@@ -133,8 +135,8 @@ table {
   border-spacing: 0;
   display: none;
   font-family: sans-serif;
-  /*max-width: 100%;
-  width: 100%;*/
+  /*max-width: 100%;*/
+  width: 100%;
   margin-bottom: 100px;
   background-color: #f1f1f1;
   color: #333;

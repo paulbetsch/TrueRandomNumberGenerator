@@ -52,8 +52,8 @@ def write(randomBit, sharedList):
     """
     global BIT_STRING, BIT_COUNTER
     BIT_COUNTER += 1
-    with open("bits.txt", 'a') as f:
-        f.write(str(randomBit))
+    #with open("bits.txt", 'a') as f:
+    #    f.write(str(randomBit))
 
     if len(BIT_STRING) < 128:
         BIT_STRING = BIT_STRING + str(randomBit)
@@ -131,7 +131,7 @@ def Capture(stopEvent, errorEvent, sharedList):
                 else:
                     error("Magnet functionality failed")
                     break
-
+        
         ret, frame = cap.read()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv, LOWER_BLACK, UPPER_BLACK)
@@ -235,7 +235,6 @@ def CapturePendelum(stopEvent, errorEvent, sharedList):
     Startet Pendel 
     """
     try:
-        ClearTestSetup()
         Capture(stopEvent,errorEvent ,sharedList)
     except Exception:
         """

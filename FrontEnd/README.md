@@ -26,6 +26,8 @@ server {
 ```
 6. run command: `sudo service nginx restart`
 7. Not you can access the Website via [http://localhost:80/](http://localhost:80)
+8. __Be aware if you use an SSL Certificate change the configs and URLs__
+
 ## Scripts
 - index.html: shows the form, which can be used to controll the API.
 - scrip.js: sends the Requests to the API, when buttons are hit.

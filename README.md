@@ -21,10 +21,11 @@ This repository includes all scripts and files which we use to develop a True Ra
 - Any IDE you prefer, e. g. PyCharm, VS Code, Python IDE
 - Git CLI to get the code onto the Raspberry Pi
 
-## Architechture
-
 ## Installation
-
+- use command : `git clone https://github.com/paulbetsch/TrueRandomNumberGenerator.git`
+- than follow the instructions for [setting up the frontend](./FrontEnd/README.md)
+- To setup the API follow these [instructions](./TRNG_API/README.md)
+- When both servers are running and you can reach them you are ready to generate!
 
 ## Code Style
 - Always **comment your code** with a short explanation of what it does.

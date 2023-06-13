@@ -3,7 +3,7 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import time
-#import logging
+import RPi.GPIO as GPIO
 from ErrorEvent import ErrorEvent
 from multiprocessing import Process, Queue, Manager, Event, RawArray
 from ctypes import c_char
@@ -78,10 +78,8 @@ class PendelManager:
         if(cameraFunc.CheckCameraFunctionality() and magnetFunc.CheckMagnetFunctionality()):
             # Check if noise source works correctly
             hexNums = self.generateRandomBits(10, 100)
-            #print(hexNums)
             # convert hexNums to binary
             binaryData = self.__hexArrayToBinaryString(hexNums)
-            #print(binaryData)
             BsiInitTestsPassed = self.checkBSITests(binaryData)
         else:
             BsiInitTestsPassed = False
@@ -99,11 +97,9 @@ class PendelManager:
             randomValues = Queue()
             stopEvent = Event()
             errorEvent = ErrorEvent(RawArray(c_char, 255))
-
             # Start the generation of random values
             videoProc = Process(target=ObjectTracker.CapturePendelum, args=(stopEvent, errorEvent, randomValues))
             videoProc.start()
-
             # Do checks with numbers and generate as much as the params require here
             bits = ""
             goodBytes = ""
@@ -143,6 +139,8 @@ class PendelManager:
 
                     # If the requested amount of bits has been reached, the generation process will be stopped and the stopEvent will be triggerd
                     if(len(goodBytes) >= (quantity * numBits)):
+                        # Reset Lifting Magnet to prevent overheating
+                        GPIO.output(13,1)
                         # Stop the generation of random values
                         stopEvent.set()
                         break
@@ -182,7 +180,7 @@ if __name__ == '__main__':
     functional = __manager.checkFunctionality()
     if(functional):   
         print("Functional") 
-        print(__manager.generateRandomBits(100, 5000))
+        print(__manager.generateRandomBits(4, 256))
     else:
         print("Not Functional")
 
