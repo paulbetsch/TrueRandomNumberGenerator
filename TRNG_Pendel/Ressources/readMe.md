@@ -1,0 +1,1 @@
+The files contained in this folder are 3D models for the TRNG. The files contain casings for a Raspberry Pi 3b+, anrelay, and a camera as well as a pendulum arm. The .stl files can be opened and edited with Autodesk Fusion 360. All models should be printed using pearl white PLA printing material.
