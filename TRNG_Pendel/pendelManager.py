@@ -3,7 +3,6 @@ import sys, os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import time
-#import logging
 import RPi.GPIO as GPIO
 from ErrorEvent import ErrorEvent
 from multiprocessing import Process, Queue, Manager, Event, RawArray
@@ -77,13 +76,10 @@ class PendelManager:
         # Check if all components are ready to work
         # Only functional if all components function correctly
         if(cameraFunc.CheckCameraFunctionality() and magnetFunc.CheckMagnetFunctionality()):
-            #print("functional: going into generation")
             # Check if noise source works correctly
             hexNums = self.generateRandomBits(10, 100)
-            #print(hexNums)
             # convert hexNums to binary
             binaryData = self.__hexArrayToBinaryString(hexNums)
-            #print(binaryData)
             BsiInitTestsPassed = self.checkBSITests(binaryData)
         else:
             BsiInitTestsPassed = False
