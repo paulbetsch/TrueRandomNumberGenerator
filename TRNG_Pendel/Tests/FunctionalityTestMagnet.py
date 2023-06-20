@@ -31,8 +31,8 @@ def CheckMagnetFunctionality():
     #Current OF THE LIFTING MAGNETE
     current = ina.current()
     
-    #A flow of electricity under 0.2 mA is in our context aquivilent to a not functional lifting magnet
-    if current>=0.2:
+    #A flow of electricity under 1 A is in our context aquivilent to a not functional lifting magnet
+    if current>=1:
         GPIO.output(13,1)
         functional = True
     else:
