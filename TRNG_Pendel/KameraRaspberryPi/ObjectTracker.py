@@ -15,26 +15,28 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from Engine import motor as m
 from Tests import FunctionalityTestMagnet as magnet
 
-#RGB Reichweite für die Analyse der Bewegungen des schwarzen Pendels
+#RGB Ranges
 LOWER_BLACK = (0, 0, 0)
 UPPER_BLACK = (255, 255, 55)
 
-#Minimale Fläche bei der schwarze Pixel als schwarzer Punkte des Pendels erkannt werden
+#Minimum area and maximum area for the black square on the outer pendulum in pixels
 MIN_AREA = 20
 MAX_AREA = 5000
 BIT_COUNTER = 0
 
+#Middle of the Pendelum
 X_MIDDLE = 324
 Y_MIDDLE = 235
 START_TIME = 0
-#Daten
+
+#DATA
 TIMESTAMPS = []
 XCOORD_LIST = []
 YCOORD_LIST = []
 WINKEL_LIST = []
 BIT_STRING = ""
 
-#Dicitionaries mit Pixelranges
+#Dicitionaries with Pixelranges for grid
 ONEANDZEROGRID_BREITE = {}
 for breite in range(640 + 1):
     ONEANDZEROGRID_BREITE[breite] = breite % 2
@@ -46,38 +48,37 @@ for hoehe in range(480 + 1):
 
 def write(randomBit, sharedList):
     """
-    Schreibt ein Strings an Bits in die übergebene File sowie in die globale Variable BIT_STRING
-    Wenn 64 Bit generiert wurden, werden diese per Interprozess Kommunikation an das Skript
-    Pendelmanager übergeben
+    Writes a string of bits to the global variable BIT_STRING.
+    Every 64 bits generated, they are passed to the script PendulumManager
+    via interprocess communication.
     """
     global BIT_STRING, BIT_COUNTER
     BIT_COUNTER += 1
-    #with open("bits.txt", 'a') as f:
-    #    f.write(str(randomBit))
-
+    
     if len(BIT_STRING) < 128:
         BIT_STRING = BIT_STRING + str(randomBit)
     else: 
+        #ADD 64BIT Block to sharedList with PendelumManger
         sharedList.put(BIT_STRING)
         BIT_STRING = str(randomBit) 
 
-def widthToBitsPaul(coordList, sharedList):
+def widthToBits(coordList, sharedList):
     """
-    Wandelt die X-Koordinate über das BreitenEinserUndNullerRaster in eine Zufallszahl um und speichert diese
+    Converts the X-coordinate through the binary one-and-zero raster into a random number and saves it.
     """
     for coord in coordList:
         write(ONEANDZEROGRID_BREITE.get(int(coord)), sharedList)
 
-def heightToBitsPaul(coordList, sharedList):
+def heightToBits(coordList, sharedList):
     """
-    Wandelt die Y-Koordinate über das BreitenEinserUndNullerRaster in eine Zufallszahl um und speichert diese
+    Converts the Y-coordinate through the binary one-and-zero raster into a random number and saves it.
     """
     for coord in coordList:
         write(ONEANDZEROGRID_HOEHE.get(int(coord)), sharedList)
         
 def CheckIfMoving(x):
     """
-    Checks if the Pendelum has enough movement (only Len needs to be checked - if not moving no contours get tracked)
+    Checks if the Pendelum has movement 
     """
     if len(x) < 2:
         return False
@@ -86,8 +87,8 @@ def CheckIfMoving(x):
 
 def Capture(stopEvent, errorEvent, sharedList):
     """
-    Tracked Konturen aus einem Live Stream, schreibt Koordinaten x, y und abstand, winkel (polares Koordinaten System)
-    Solange bis "q" im geöffneten Fenster gedrückt wird oder die Gewünschte anzahl an Bits (numbits) erreicht wurde 
+    Tracks contours from a live stream from the camera, writes x, y, and angle until the PendulumManager script terminates, or an Error occurs.
+    Every 8 seconds it writes its data starts the Motorprocess for 2 seconds.
     """
     def error(message):
         """
@@ -120,7 +121,7 @@ def Capture(stopEvent, errorEvent, sharedList):
                 t = Process(target=m.StartEngine, args=(2, 0))
                 t.start()
             else:
-                # First Check failed than start engine and check again
+                # First Check failed then start engine and check again
                 t = Process(target=m.StartEngine, args=(2, 0))
                 t.start()
                 if magnet.CheckMagnetFunctionality():
@@ -131,14 +132,16 @@ def Capture(stopEvent, errorEvent, sharedList):
                 else:
                     error("Magnet functionality failed")
                     break
-        
-        ret, frame = cap.read()
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(hsv, LOWER_BLACK, UPPER_BLACK)
-        #Finde Konturen
+        # Read a frame from the video capture
+        ret, frame = cap.read()      
+        # Convert the frame from BGR to HSV color space
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)    
+        # Create a mask using lower and upper black color thresholds
+        mask = cv2.inRange(hsv, LOWER_BLACK, UPPER_BLACK)     
+        # Find contours in the mask image using external retrieval mode and simple chain approximation
         contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            
-        # Sortiere Konturen nach Fläche in absteigender Reihenfolge, nur die größten 2 Nehmen
+
+        #Sort contours in descending order based on their area, take only the largest one
         contours = sorted(contours, key=cv2.contourArea, reverse=True)[:1]
 
         for contour in contours:
@@ -146,15 +149,8 @@ def Capture(stopEvent, errorEvent, sharedList):
                 (x, y), radius = cv2.minEnclosingCircle(contour)
                 area = cv2.contourArea(contour)
                 if area >= MIN_AREA and area < MAX_AREA:
-                    #center = (float(x), float(y))
-                    #radius = int(radius)
-                    #Kreis zum Mittelpunkt
                     cv2.circle(frame, (int(X_MIDDLE), int(Y_MIDDLE)), 2, (255, 255, 255), 1)
-                    # Kreis zum schwarzen Punkt 
                     cv2.circle(frame, (int(x), int(y)), 5, (0, 255, 0), 2)
-                    #Linie zu Punkt
-                    #cv2.line(frame, (int(X_MIDDLE), int(Y_MIDDLE)), (int(x), int(y)), (0, 0, 255), 2)
-                    
                     dx = float(x) - X_MIDDLE
                     dy = float(y) - Y_MIDDLE 
                     distanz = math.sqrt(dx ** 2 + dy ** 2)
@@ -167,21 +163,6 @@ def Capture(stopEvent, errorEvent, sharedList):
                 else:
                     if MAX_AREA < area:
                         error("Camera disturbance, remove disturbing Objects")
-                #cv2.imshow("Frame", frame)
-
-        #Pausierung des programms 
-        #if cv2.waitKey(1) & 0xFF == ord('b'):
-         #   print("Pause")
-          #  while True:
-           #     if cv2.waitKey(1) & 0xFF == ord('b'):
-            #        print("Go")
-             #       break       
-                
-        #if cv2.waitKey(1) & 0xFF == ord('q'):
-         #   GenerateData(sharedList)
-          #  logging.info(f"Total time running: {str(int((time.time() - START_TIME) / 60))} minutes - {BIT_COUNTER} Bits")
-           # logging.info(f"Generated {str(BIT_COUNTER / (time.time() - START_TIME))} Bits per second on average")
-            #break
 
     cap.release()
     cv2.destroyAllWindows()
@@ -189,39 +170,29 @@ def Capture(stopEvent, errorEvent, sharedList):
 
 
 def GenerateData(sharedList):
+    
     """
-    Führt erschwünschte Endmethoden zur Digitalisierung aus 
+    Performs desired methods for digitization.
     """
     global XCOORD_LIST, YCOORD_LIST, WINKEL_LIST
-    
-    widthToBitsPaul(XCOORD_LIST, sharedList)
-    heightToBitsPaul(YCOORD_LIST, sharedList)
+    widthToBits(XCOORD_LIST, sharedList)
+    heightToBits(YCOORD_LIST, sharedList)
     LsbFloat(WINKEL_LIST, sharedList)
 
+    #Reset Lists after generation of Data 
     XCOORD_LIST, YCOORD_LIST, WINKEL_LIST = [], [], []
 
 
 def Sign(zahl):
     """
-    Überprüft ob die übergebene Zahl ein negatives Vorzeichen hat
+    Checks if the given number has a negative sign.
     """
-    return -1 if (zahl < 0) else 1
-
-
-def ClearTestSetup():
-    """
-    Löscht Inhalt der jeweiligen Files 
-    """
-    with open('output.csv', 'w') as f:
-        f.write("")
-
-    with open('bits.txt', 'w') as f:
-        f.write("")     
+    return -1 if (zahl < 0) else 1     
 
     
-def LsbFloat(floatList, sharedList):
+def LsbFloat(floatList, sharedList):  
     """
-    Schreibt LSB einer Float (aus floatList) in file 
+    Writes the LSB (Least Significant Bit) of a float (from floatList) to a file.
     """
     for i in floatList:
         binary_str = ''.join(format(c, '08b') for c in struct.pack('!f', i))
@@ -231,15 +202,15 @@ def LsbFloat(floatList, sharedList):
 
 def CapturePendelum(stopEvent, errorEvent, sharedList):
     """
-    Hauptmethode
-    Startet Pendel 
+    Main method
+    Starts the pendulum.
     """
     try:
         Capture(stopEvent,errorEvent ,sharedList)
     except Exception:
         """
-        Error Handling für unbekannte/unerwartete Fehler 
+        Error handling for unknown/unexpected errors.
         """
-        #errorEvent.setErrorDescription("Oops something went wrong, review logs")
+        errorEvent.setErrorDescription("Oops something went wrong, review logs")
         logging.info(Exception)
-        #errorEvent.setEvent()
+        errorEvent.setEvent()
